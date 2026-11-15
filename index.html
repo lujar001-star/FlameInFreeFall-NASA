@@ -73,6 +73,20 @@
   .callout b { color:var(--gold); }
   .callout.alert { border-left-color:#ff5a6e; } .callout.alert b { color:#ff8a98; }
   .pill.evidence-psi { background:#1f6b4a; } .pill.evidence-related { background:#6b5a1f; } .pill.evidence-spinoff { background:transparent; border:1px solid #9a8a90; color:#d8c8cc; }
+  .cases { display:grid; gap:22px; }
+  .case { display:grid; grid-template-columns:150px 1fr; gap:24px; background:var(--black); border:1px solid var(--line); border-left:4px solid var(--gold); padding:24px; border-radius:4px; }
+  .case.scenario { border-left-color:#5bc0eb; }
+  .case-year { font-size:30px; font-weight:800; color:var(--gold); line-height:1; }
+  .case.scenario .case-year { color:#5bc0eb; font-size:22px; }
+  .case-year small { display:block; font-size:13px; font-weight:600; color:var(--muted); margin-top:8px; }
+  .case h3 { font-size:21px; margin-bottom:6px; }
+  .case .atm { display:inline-block; font-size:13px; font-weight:700; background:#3a1520; padding:3px 10px; border-radius:3px; margin-bottom:10px; }
+  .case-cols { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px 26px; margin-top:12px; }
+  .case h4 { font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--gold); margin-bottom:4px; }
+  .case p { color:#eadde0; font-size:14.5px; }
+  .case .links a { border-bottom:1px solid #ffcc33; }
+  .case .lesson { margin-top:14px; border-left:3px solid var(--gold); padding-left:12px; font-size:15.5px; color:#fff; }
+  @media (max-width:700px){ .case { grid-template-columns:1fr; gap:10px; } }
   .equip-card { display:flex; flex-direction:column; gap:8px; }
   .equip-card h4 { font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--gold); margin-top:4px; }
   .equip-card .gap { border-left:3px solid #ff5a6e; padding-left:10px; color:#f3d3d8; font-size:14.5px; }
@@ -265,6 +279,7 @@
         <button class="nav-top" type="button" aria-expanded="false" aria-haspopup="true">Fire safety <span class="caret">▼</span></button>
         <ul class="menu">
           <li><button type="button" data-tab="firesafety" aria-selected="false">Equipment &amp; Controls<small>Next-generation hardware and procedures</small></button></li>
+          <li><button type="button" data-tab="cases" aria-selected="false">Case Studies<small>Real spacecraft fires through the data</small></button></li>
           <li><button type="button" data-tab="earth" aria-selected="false">Earth Applications<small>Fire safety back on the ground</small></button></li>
         </ul>
       </li>
@@ -455,6 +470,16 @@
   </div>
 </section>
 
+<!-- CASE STUDIES -->
+<section class="view" id="view-cases">
+  <div class="wrap">
+    <h2>Case studies</h2>
+    <p class="lede">Real spacecraft fire and smoke events, and one scenario for a lunar rover, read through the PSI data: what happened, which research applies, and what it means for crews on the Moon and Mars.</p>
+    <div class="cases" id="caseList"></div>
+    <div class="callout"><b>About these summaries:</b> historical accounts are brief summaries of widely published NASA and mission records. The PSI links show research relevant to each lesson; PSI did not investigate these events. The Artemis II entry uses only what the challenge brief states.</div>
+  </div>
+</section>
+
 <!-- DATA & METHODS -->
 <section class="view" id="view-resources">
   <div class="wrap" id="resources">
@@ -536,7 +561,7 @@
     </div>
     <div class="f-links">
       <ul><li><a href="#" data-go="overview">Overview</a></li><li><a href="#" data-go="relevance">Mission Relevance</a></li><li><a href="#" data-go="investigations">Investigations</a></li></ul>
-      <ul><li><a href="#" data-go="conditions">Test Conditions</a></li><li><a href="#" data-go="compare">Compare</a></li><li><a href="#" data-go="modeling">Modeling Data</a></li><li><a href="#" data-go="firesafety">Fire Safety &amp; Equipment</a></li><li><a href="#" data-go="earth">Earth Applications</a></li></ul>
+      <ul><li><a href="#" data-go="conditions">Test Conditions</a></li><li><a href="#" data-go="compare">Compare</a></li><li><a href="#" data-go="modeling">Modeling Data</a></li><li><a href="#" data-go="firesafety">Fire Safety &amp; Equipment</a></li><li><a href="#" data-go="cases">Case Studies</a></li><li><a href="#" data-go="earth">Earth Applications</a></li></ul>
       <ul><li><a href="#" data-go="resources">Methodology</a></li><li><a href="#" data-go="hardware">Hardware</a></li><li><a href="#" data-go="team">Team</a></li></ul>
     </div>
     <div class="f-social"><h3>External links</h3><ul><li><a href="https://github.com/lujar001-star/FlameInFreeFall-NASA" target="_blank" rel="noopener">GitHub repository</a></li><li><a href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=details" target="_blank" rel="noopener">Challenge brief</a></li><li><a href="https://psi.nasa.gov/physci/repo/search?q=combustion&amp;data_source=psi&amp;data_type=investigation" target="_blank" rel="noopener">NASA PSI database</a></li></ul></div>
@@ -1098,6 +1123,63 @@
       </article>`).join('');
   }
   renderEquip();
+
+  /* ---------- Case studies ---------- */
+  const moonComps = HAB["Moon base"].components;
+  const moonNear = INV.filter(i => moonComps[i.accession].matching > 0);
+  const CASES = [
+    {y: "1967", sub: "Ground test", t: "Apollo 1 cabin fire", atm: "100% O₂, slightly above sea-level pressure",
+     what: "During a launch-pad test, a fire broke out inside the sealed command module and spread through the pure-oxygen cabin within seconds. All three astronauts (Grissom, White and Chaffee) died; the inward-opening hatch could not be opened in time.",
+     why: "An ignition source (most likely an electrical arc) met flammable cabin materials such as nylon netting and Velcro in pure oxygen above sea-level pressure, where nearly everything burns fiercely.",
+     psi: "PSI's high-oxygen data shows how burning changes as oxygen rises: ACME CFI-G and Flame Design reach 85% O₂, BRE and FLEX go above 30%. BASS, BASS-II and Saffire address material selection, but every solid-material test was run at or below cabin-air oxygen.",
+     inv: ["PSI-159", "PSI-20", "PSI-69", "PSI-25", "PSI-99"],
+     lesson: "Oxygen enrichment is the root hazard behind the planned 30%+ O₂ Moon-base atmosphere. Material selection for that atmosphere needs solid-material flammability data at elevated oxygen, which PSI does not yet have."},
+    {y: "1970", sub: "In flight", t: "Apollo 13 oxygen tank failure", atm: "High-pressure oxygen tank in the service module",
+     what: "About 56 hours into the mission, an oxygen tank in the service module failed. The crew used the lunar module as a lifeboat and returned safely.",
+     why: "Wiring insulation inside the tank, damaged during pre-flight ground processing, is understood to have ignited in the pure oxygen when tank equipment was switched on.",
+     psi: "High-pressure oxygen systems are outside the scope of PSI data. The relevant thread is that materials ignite and burn more readily in oxygen-rich conditions, which the ACME high-oxygen experiments quantify for gaseous flames.",
+     inv: ["PSI-159", "PSI-10"],
+     lesson: "Ignition control and oxygen-compatible materials matter everywhere oxygen is stored, not just in the cabin. PSI informs cabin fires; oxygen-system hazards need other test programs."},
+    {y: "1997", sub: "Space station", t: "Mir oxygen generator fire", atm: "Space-station cabin air",
+     what: "A solid-fuel oxygen generator caught fire aboard the Mir space station, filling the station with smoke. The multinational crew put the fire out with extinguishers while wearing breathing masks, and survived.",
+     why: "A chemical oxygen generator failed and burned; because it produced its own oxygen, cutting off air could not starve it.",
+     psi: "Detection: SAME and SAME-R provide the microgravity smoke baseline for detectors. Suppression: FLEX measured how much oxygen flames need with and without suppressants. BRE showed that removing airflow alone may not stop burning at elevated oxygen.",
+     inv: ["PSI-102", "PSI-101", "PSI-69", "PSI-20"],
+     lesson: "Smoke spreads through a sealed station quickly and fires near oxygen sources resist simple countermeasures; early detection and effective suppressants are both essential."},
+    {y: "2006", sub: "Space station", t: "ISS oxygen generator smoke event", atm: "ISS cabin air",
+     what: "The Russian Elektron oxygen generator on the ISS overheated and released smoke and an irritating chemical odor. The crew declared an emergency and put on masks; there was no open fire.",
+     why: "An equipment malfunction in an oxygen generation system released aerosols into the cabin.",
+     psi: "Telling a real fire from other aerosol releases is a detection problem: SAME and SAME-R measured microgravity smoke particles, DAFT validated the particle counter, and ASE characterized background cabin aerosol.",
+     inv: ["PSI-102", "PSI-101", "PSI-47"],
+     lesson: "Detectors must respond fast to real smoke while crews can judge non-fire releases; that requires knowing what microgravity smoke and normal cabin aerosol look like."},
+    {y: "Recent", sub: "Artemis II", t: "Smoke alarm far from home", atm: "Orion crew cabin",
+     what: "As described in the challenge brief, a smoke alarm went off during the Artemis II mission while the crew was tens of thousands of miles from Earth, and the commander noted how quickly an alarm gets a crew's attention that far from home.",
+     why: "The brief does not give the cause; we do not speculate.",
+     psi: "Every alarm far from Earth forces a decision with no option to come home quickly. SAME, SAME-R and DAFT are the PSI basis for detectors that alarm reliably on real microgravity smoke.",
+     inv: ["PSI-102", "PSI-101", "PSI-47"],
+     lesson: "Detection reliability, catching real fires early without false alarms, becomes more important the farther crews travel from Earth."},
+    {y: "Scenario", sub: "Lunar rover", t: "Fire in a pressurized lunar rover", atm: "30–34% O₂ at 8.2–10.2 psi, 1/6 g", scenario: true,
+     what: "A wiring fault ignites a fabric stowage bag in a small pressurized rover, hours from the Moon base. The crew must detect it, decide whether shutting off ventilation will work, and suppress it in a cabin they cannot quickly leave.",
+     why: "Oxygen-enriched air makes fabrics easier to ignite and faster burning; a small cabin fills with smoke and heat within minutes.",
+     psi: `${moonNear.length} investigations have tests near this atmosphere (${moonNear.map(i => i.name).join(', ')}). BRE found flames kept burning with airflow stopped at elevated oxygen, so fan shutoff alone may not work. Saffire measured how a fire changes O₂, CO₂ and pressure in a sealed vehicle, but only at 21% O₂.`,
+     inv: ["PSI-20", "PSI-69", "PSI-159", "PSI-98", "PSI-102"],
+     lesson: `What is missing: none of the ${G.solid_tests} solid-material tests in PSI is near rover air, there is no partial-gravity combustion data, and no vehicle-scale fire has been run at elevated oxygen. Those are the experiments the next fire-safety missions (such as FM2 and LUCI) need to fill.`},
+  ];
+  document.getElementById('caseList').innerHTML = CASES.map(c => `
+    <article class="case ${c.scenario ? 'scenario' : ''}">
+      <div class="case-year">${esc(c.y)}<small>${esc(c.sub)}</small></div>
+      <div>
+        <h3>${esc(c.t)}</h3>
+        <span class="atm">Atmosphere: ${esc(c.atm)}</span>
+        <div class="case-cols">
+          <div><h4>${c.scenario ? 'Scenario' : 'What happened'}</h4><p>${esc(c.what)}</p></div>
+          <div><h4>Why it was dangerous</h4><p>${esc(c.why)}</p></div>
+          <div><h4>What the PSI data says</h4><p>${esc(c.psi)}</p>
+            <p class="links" style="margin-top:6px">${c.inv.filter(a => byAcc[a]).map(a => `<a href="#" data-open="${a}">${esc(byAcc[a].name)}</a>`).join(' · ')}</p></div>
+        </div>
+        <p class="lesson"><b>Lesson for the Moon and Mars:</b> ${esc(c.lesson)}</p>
+      </div>
+    </article>`).join('');
 
   /* ---------- Earth applications ---------- */
   const EARTH = [
