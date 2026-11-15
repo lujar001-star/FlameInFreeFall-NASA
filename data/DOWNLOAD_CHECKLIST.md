@@ -1,0 +1,57 @@
+# Experiment tables to download
+
+Open each link, go to **Data files and documents** -> **Experimental table** folder,
+tick the CSV, click Download, and save it into `data/tables/`.
+
+- [ ] **PSI-10 ACME/Flame Design** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-10
+    - `PSI-10_Experimental table_Flame Design_Normal Flame.csv`
+    - `PSI-10_Experimental table_Flame Design_Inverse Flame.csv`
+- [ ] **PSI-20 ACME BRE** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-20
+    - `PSI-20_Experimental table_ACME BRE.csv`
+- [ ] **PSI-21 ACME CLD Flame** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-21
+    - `PSI-21_Experimental table_CLD Flame.csv`
+- [ ] **PSI-22 ACME E-FIELD Flames** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-22
+    - `PSI-22_Experimental table_ACME E-FIELD Flames.csv`
+- [ ] **PSI-23 ACME s-Flame** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-23
+    - `PSI-23_Experimental table_ACME s-Flame.csv`
+- [ ] **PSI-25 BASS-II** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-25
+    - `PSI-25_Experimental table_BASS-II.csv`
+- [ ] **PSI-26 BASS** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-26
+    - `PSI-26_Experimental table_BASS.csv`
+- [ ] **PSI-39 CFI** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-39
+    - `PSI-39_Experimental table_CFI.csv`
+- [ ] **PSI-47 DAFT / DAFT-2** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-47
+    - `PSI-47_Experimental table_DAFT.csv`
+- [ ] **PSI-60 Computational and Experimental Analysis of SPICE Data Sets** (Ground Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-60
+    - (no experiment table listed)
+- [ ] **PSI-62 Concurrent Flame Spread Modeling using Flamelet Generated Ma** (Ground Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-62
+    - (no experiment table listed)
+- [ ] **PSI-68 FLEX-2** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-68
+    - `PSI-68_Experimental table_Flex2.csv`
+- [ ] **PSI-69 FLEX** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-69
+    - `PSI-69_Experimental table_FLEX.csv`
+- [ ] **PSI-98 SAFFIRE-I** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-98
+    - `PSI-98_Experimental table_SAFFIRE-1.csv`
+- [ ] **PSI-99 SAFFIRE-II** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-99
+    - `PSI-99_Experimental table_SAFFIRE-2.csv`
+- [ ] **PSI-100 SAFFIRE-III** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-100
+    - `PSI-100_Experimental table_SAFFIRE-3.csv`
+- [ ] **PSI-101 SAME-R** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-101
+    - `PSI-101_Experimental table_SAME-R.csv`
+- [ ] **PSI-102 SAME** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-102
+    - `PSI-102_Experimental table_SAME.csv`
+- [ ] **PSI-106 SLICE** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-106
+    - `PSI-106_Experimental table_Slice.csv`
+- [ ] **PSI-107 SPICE** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-107
+    - `PSI-107_Experimental table_Spice.csv`
+- [ ] **PSI-115 Utilization of the Smoke Aerosol Measurement Experiment Data** (Ground Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-115
+    - (no experiment table listed)
+- [ ] **PSI-117 Effect of External Thermo-Convective Perturbation on Cool Fl** (Ground Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-117
+    - (no experiment table listed)
+- [ ] **PSI-142 Quantitative Studies of Cool Flame Transitions at Radiation ** (Ground Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-142
+    - `PSI-142_Experimental table_Data Summary Table.csv`
+- [ ] **PSI-159 ACME CFI-G** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-159
+    - `PSI-159_Experimental table_CFI-G_Normal Flames.csv`
+    - `PSI-159_Experimental table_CFI-G_Inverse Flames.csv`
+- [ ] **PSI-179 ASE** (Microgravity Investigation) - https://psi.nasa.gov/physci/repo/data/investigations/PSI-179
+    - (no experiment table listed)
