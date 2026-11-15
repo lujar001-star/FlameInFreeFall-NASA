@@ -28,6 +28,7 @@
   .brandname { font-weight:700; font-size:18px; }
   .search input { width:220px; height:34px; background:transparent; border:1px solid #d98a99; color:var(--text); padding:0 10px; font-size:15px; }
   .search input::placeholder { color:#e0b8c0; }
+  .logo { justify-self:center; }
   .logo img { width:60px; height:60px; display:block; border-radius:50%; }
   .topbar-right { display:flex; justify-content:flex-end; gap:28px; font-weight:600; font-size:17px; }
 
@@ -62,6 +63,11 @@
   .callout b { color:var(--gold); }
   .callout.alert { border-left-color:#ff5a6e; } .callout.alert b { color:#ff8a98; }
   .pill.evidence-psi { background:#1f6b4a; } .pill.evidence-related { background:#6b5a1f; } .pill.evidence-spinoff { background:transparent; border:1px solid #9a8a90; color:#d8c8cc; }
+  .equip-card { display:flex; flex-direction:column; gap:8px; }
+  .equip-card h4 { font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--gold); margin-top:4px; }
+  .equip-card .gap { border-left:3px solid #ff5a6e; padding-left:10px; color:#f3d3d8; font-size:14.5px; }
+  .equip-card .src { font-size:13px; color:var(--muted); }
+  .equip-card .src a { border-bottom:1px solid #ffcc33; }
   .earth-card { display:flex; flex-direction:column; gap:10px; }
   .earth-card .who { font-size:13px; color:#f3c96b; font-weight:600; }
   .earth-card h4 { font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--gold); margin-top:4px; }
@@ -228,7 +234,7 @@
       <li><button role="tab" data-tab="compare" aria-selected="false">Compare</button></li>
       <li><button role="tab" data-tab="modeling" aria-selected="false">Modeling Data</button></li>
       <li><button role="tab" data-tab="hardware" aria-selected="false">Hardware</button></li>
-      <li><button role="tab" data-tab="firesafety" aria-selected="false">Fire Safety</button></li>
+      <li><button role="tab" data-tab="firesafety" aria-selected="false">Fire Safety &amp; Equipment</button></li>
       <li><button role="tab" data-tab="earth" aria-selected="false">Earth Applications</button></li>
       <li><button role="tab" data-tab="resources" aria-selected="false">Data &amp; Methods</button></li>
       <li><button role="tab" data-tab="team" aria-selected="false">Team</button></li>
@@ -251,6 +257,14 @@
     <div class="stats" id="keystats"></div>
     <div class="callout alert" id="gapCallout"></div>
     <div class="callout"><b>Partial gravity:</b> PSI has no lunar- or Martian-gravity combustion data yet. Microgravity and 1-g results bound the behaviour in between, and ACME E-FIELD Flames is the only partial-gravity analog (electric field acting on flame ions). LUCI and FM2 are expected to fill this gap.</div>
+
+    <h3 class="section">How this dashboard answers the challenge</h3>
+    <ul class="reslist">
+      <li><b>1 · Most relevant investigations for crew environments</b><span>Rank all 19 investigations for the ISS, an exploration atmosphere, a Moon base, a pressurized rover, a Mars habitat or a spacesuit, with a transparent score. <a href="#" data-go="relevance">Mission Relevance</a></span></li>
+      <li><b>2 · Data for predictive modeling</b><span>Every test's conditions and measured results in one file with consistent units, model-ready datasets, an explorer and a data dictionary. <a href="#" data-go="modeling">Modeling Data</a></span></li>
+      <li><b>3 · Research for next-generation controls and equipment</b><span>What the research means for ventilation shutdown, material testing, detectors, extinguishing agents, oxygen limits, atmosphere monitoring and fire models, with the gaps. <a href="#" data-go="firesafety">Fire Safety &amp; Equipment</a></span></li>
+      <li><b>Bonus · Fire safety on Earth</b><span>Oxygen-enriched hospital fires, smoke detectors, clean-agent suppression and more, each tied to PSI datasets. <a href="#" data-go="earth">Earth Applications</a></span></li>
+    </ul>
 
     <h3 class="section">Start here</h3>
     <div class="grid">
@@ -370,7 +384,12 @@
 <!-- FIRE SAFETY -->
 <section class="view" id="view-firesafety">
   <div class="wrap">
-    <h2>Fire safety areas</h2>
+    <h2>Next-generation fire safety controls and equipment</h2>
+    <p class="lede">What the PSI research means for the hardware and procedures engineers will design for the Moon, Mars and future spacecraft. Each finding is taken from the PSI investigation records or computed from the experiment tables, and names its source.</p>
+    <div class="controls" id="equipFilter" role="group" aria-label="Filter by pillar"></div>
+    <div class="grid" id="equipGrid"></div>
+
+    <h3 class="section">Fire safety pillars</h3>
     <p class="lede">NASA's spacecraft fire safety work is organized around prevention, detection and suppression. Listed investigations are rated 2 or 3 (out of 3) for that pillar.</p>
     <div class="grid" id="pillarGrid"></div>
     <h3 class="section">Related studies without experiment tables</h3>
@@ -478,7 +497,7 @@
     </div>
     <div class="f-links">
       <ul><li><a href="#" data-go="overview">Overview</a></li><li><a href="#" data-go="relevance">Mission Relevance</a></li><li><a href="#" data-go="investigations">Investigations</a></li></ul>
-      <ul><li><a href="#" data-go="conditions">Test Conditions</a></li><li><a href="#" data-go="compare">Compare</a></li><li><a href="#" data-go="modeling">Modeling Data</a></li><li><a href="#" data-go="firesafety">Fire Safety</a></li><li><a href="#" data-go="earth">Earth Applications</a></li></ul>
+      <ul><li><a href="#" data-go="conditions">Test Conditions</a></li><li><a href="#" data-go="compare">Compare</a></li><li><a href="#" data-go="modeling">Modeling Data</a></li><li><a href="#" data-go="firesafety">Fire Safety &amp; Equipment</a></li><li><a href="#" data-go="earth">Earth Applications</a></li></ul>
       <ul><li><a href="#" data-go="resources">Methodology</a></li><li><a href="#" data-go="hardware">Hardware</a></li><li><a href="#" data-go="team">Team</a></li></ul>
     </div>
     <div class="f-social"><h3>External links</h3><ul><li><a href="https://github.com/lujar001-star/FlameInFreeFall-NASA" target="_blank" rel="noopener">GitHub repository</a></li><li><a href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=details" target="_blank" rel="noopener">Challenge brief</a></li><li><a href="https://psi.nasa.gov/physci/repo/search?q=combustion&amp;data_source=psi&amp;data_type=investigation" target="_blank" rel="noopener">NASA PSI database</a></li></ul></div>
@@ -918,6 +937,73 @@
     <article class="card"><span class="pill">Ground modeling study</span><h3>${esc(g.accession)}</h3><p>${esc(g.summary)}</p>
     <p style="margin-top:8px">Uses: ${g.uses.filter(a => byAcc[a]).map(a => `<a href="#" data-open="${a}" style="border-bottom:1px solid #ffcc33">${esc(byAcc[a].name)}</a>`).join(', ')}</p>
     <a class="go" href="https://psi.nasa.gov/physci/repo/data/investigations/${esc(g.accession)}" target="_blank" rel="noopener">PSI record</a></article>`).join('');
+
+  /* ---------- Equipment & controls ---------- */
+  const EQUIP = [
+    {t: "Ventilation shutdown procedures", p: "suppression",
+     q: "Is turning off the fans enough to put out a fire in an oxygen-enriched habitat?",
+     f: "Stopping ventilation is an established first step in fighting spacecraft fires. ACME BRE found that flames emulating burning PMMA and nylon kept burning steadily with no air flow in elevated-oxygen atmospheres, while the same flames at 21% O₂ self-extinguished quickly.",
+     n: "Fire response for Moon bases and rovers cannot rely on fan shutoff alone; procedures and hardware should pair it with active suppression.",
+     g: "BRE used gas-fed burners that emulate solids; real solid materials have not been tested at these oxygen levels in microgravity.",
+     inv: ["PSI-20"], src: "PSI-20 research impacts"},
+    {t: "Material flammability testing and selection", p: "prevention",
+     q: "Does NASA's standard material screening test predict how materials burn in space?",
+     f: "Materials are screened with NASA-STD-6001 Test 1, a normal-gravity upward-burning test. BASS states this test does not account for low-gravity effects; BRE suggests wider use of Test 2 (cone calorimeter), whose measured material properties correspond to the microgravity flames it observed. Saffire-II measured flame spread on the same materials in microgravity and in 1-g.",
+     n: "A performance-based selection process that adds heat-release (cone calorimeter) data and microgravity flammability limits to the 1-g pass/fail test.",
+     g: `Every solid-material test in PSI was run at or below ${G.solid_max_o2_measured}% O₂, so 30%+ habitat atmospheres are not yet covered.`,
+     inv: ["PSI-26", "PSI-25", "PSI-20", "PSI-99"], src: "PSI-26 and PSI-20 research impacts; PSI-99 table"},
+    {t: "Smoke and fire detectors", p: "detection",
+     q: "Will detectors designed on Earth recognize smoke that forms without buoyancy?",
+     f: "SAME and SAME-R provide the microgravity smoke baseline (particle sizes from heated spacecraft materials vs flow and aging time) against which future detector technology is evaluated, under NASA's Fire Prevention, Detection and Suppression program. DAFT confirmed the particle counter used to measure that smoke works in microgravity.",
+     n: "Detectors tuned to microgravity smoke particle sizes, able to tell fire smoke from dust and background cabin aerosol.",
+     g: "Smoke data comes from cabin air only; no smoke measurements exist at elevated O₂ or reduced pressure, and lunar dust is a new source of false alarms.",
+     inv: ["PSI-102", "PSI-101", "PSI-47"], src: "PSI-102 and PSI-101 research impacts"},
+    {t: "Extinguishing agents and portable extinguishers", p: "suppression",
+     q: "Which agent, and how much of it, puts out a fire in microgravity?",
+     f: "FLEX measured how much oxygen a flame needs to keep burning (the limiting oxygen index) with and without the suppressants CO₂ and helium, across pressures; BASS tested nitrogen as a suppressant for burning solids, a direct link to current and planned extinguishment techniques.",
+     n: "Agent choice and required concentrations for extinguishers and total-flooding systems in exploration vehicles.",
+     g: "Suppression data is for droplets (FLEX) and solids at cabin air (BASS); no suppression tests on solids at 30%+ O₂.",
+     inv: ["PSI-69", "PSI-68", "PSI-26"], src: "PSI-69 objectives and approach; PSI-26 research impacts"},
+    {t: "Cabin oxygen limits and monitoring", p: "prevention",
+     q: "How much oxygen can a habitat hold before materials become too flammable?",
+     f: "FLEX tests span 12 to 34% O₂ and about 0.7 to 3 atm; BRE explicitly tested NASA's candidate exploration atmospheres (14.7 psia / 21%, 10.2 psia / 26.5%, 8.2 psia / 34% O₂); BASS-II ran solids at reduced oxygen down to 13.6%.",
+     n: "Evidence for setting habitat O₂ setpoints and alarm thresholds, and for how tightly O₂ must be controlled.",
+     g: "Trade-off curves for solids between 22% and 34% O₂ do not exist in PSI.",
+     inv: ["PSI-69", "PSI-20", "PSI-25"], src: "PSI-20 objectives; FLEX and BASS-II tables"},
+    {t: "Post-fire atmosphere monitoring and cleanup", p: "detection",
+     q: "How fast does a fire change the air the crew breathes?",
+     f: "BASS-II recorded O₂, CO₂ and carbon monoxide before and after each burn; Saffire measured oxygen, carbon dioxide, heat and pressure inside a sealed Cygnus vehicle during large fires.",
+     n: "Sizing of CO and combustion-product sensors, filters and scrubbers, and pressure response in small sealed volumes like rovers.",
+     g: "Vehicle-scale data (Saffire) exists only at 21% O₂.",
+     inv: ["PSI-25", "PSI-98", "PSI-99", "PSI-100"], src: "PSI-98 research impacts; BASS-II table"},
+    {t: "Fire models and scenario simulation tools", p: "prevention",
+     q: "Can computer models predict a fire we cannot test?",
+     f: "BASS and BASS-II state that the simpler microgravity flow environment is used to validate detailed combustion models. Five PSI ground studies already built models on this flight data (flame spread over solids, droplet cool flames, smoke growth, soot from SPICE).",
+     n: "Validated simulation tools to predict fires at Moon-base conditions that are too risky or expensive to test directly.",
+     g: "Models validated near 21% O₂ must be extrapolated to habitat conditions until new data arrives (e.g. FM2, LUCI).",
+     inv: ["PSI-25", "PSI-26", "PSI-69", "PSI-107"], src: "PSI-25 and PSI-26 research impacts; PSI ground studies"},
+  ];
+  let eqFilter = null;
+  function renderEquip() {
+    const f = document.getElementById('equipFilter'); f.innerHTML = '';
+    PILLARS.forEach(p => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = cap(p);
+      b.setAttribute('aria-pressed', eqFilter === p);
+      b.onclick = () => { eqFilter = eqFilter === p ? null : p; renderEquip(); };
+      f.appendChild(b);
+    });
+    document.getElementById('equipGrid').innerHTML = EQUIP.filter(e => !eqFilter || e.p === eqFilter).map(e => `
+      <article class="card equip-card">
+        <div><span class="pill ${cap(e.p)}">${cap(e.p)}</span></div>
+        <h3>${esc(e.t)}</h3>
+        <p><i>${esc(e.q)}</i></p>
+        <h4>What PSI research found</h4><p>${esc(e.f)}</p>
+        <h4>Next-generation implication</h4><p>${esc(e.n)}</p>
+        <p class="gap"><b>Gap:</b> ${esc(e.g)}</p>
+        <p class="src">Source: ${esc(e.src)} · ${e.inv.filter(a => byAcc[a]).map(a => `<a href="#" data-open="${a}">${esc(byAcc[a].name)}</a>`).join(', ')}</p>
+      </article>`).join('');
+  }
+  renderEquip();
 
   /* ---------- Earth applications ---------- */
   const EARTH = [
