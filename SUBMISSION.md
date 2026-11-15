@@ -79,9 +79,10 @@ It also includes:
    - Physically impossible values (0 atm, 200% O2, negative flows, 0 °C burner temperatures) are
      removed, never guessed, and noted in the row.
 3. Insight cards were drafted with AI assistance and then checked claim by claim against each
-   investigation's PSI record and table, in two rounds (including an independent AI review). Each
-   card states what it was checked against and separates what a study was *designed* to do from
-   what PSI *reports* and what the *table* shows.
+   investigation's PSI record and table: our own full audit plus two independent AI fact-checks
+   (the final one found 0 contradicted claims). Each card states what it was checked against and
+   separates what a study was *designed* to do from what PSI *reports* and what the *table* shows.
+   A single-file verification bundle (docs/verification_bundle.md) lets anyone repeat the check.
 4. The website is a single static page (HTML, CSS, JavaScript with Plotly), so it runs on GitHub
    Pages, opens offline from a file, and needs no server or API key.
 

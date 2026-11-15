@@ -21,6 +21,9 @@ data/raw/
 *.h5
 *.hdf5
 
+# Local tool settings
+.claude/
+
 # OS / editor
 .DS_Store
 Thumbs.db
