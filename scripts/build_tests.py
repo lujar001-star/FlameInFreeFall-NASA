@@ -21,7 +21,7 @@ FIELDS = [
     # identity
     "accession", "investigation", "test_id", "fuel", "fuel_phase", "config",
     # test conditions (model inputs)
-    "o2_min_pct", "o2_max_pct", "pressure_min_atm", "pressure_max_atm",
+    "o2_min_pct", "o2_max_pct", "pressure_min_atm", "pressure_max_atm", "o2_levels_pct", "p_levels_atm",
     "flow_min_cm_s", "flow_max_cm_s", "flow_direction", "diluent", "co2_pct", "he_pct",
     "size_mm", "fuel_flow_mg_s", "aging_time_s",
     # calculated design parameters (reported in the table, computed not measured)
@@ -154,6 +154,8 @@ def flex2():
         p = span(r.get("Ambient Pressure (atm)"))
         f = span(r.get("Flow Velocity (cm/s)"))
         out.append(row(
+            o2_levels_pct=";".join(str(round(v * 100, 2)) for v in nums(r.get("Oxygen Mole Fraction"))),
+            p_levels_atm=";".join(str(v) for v in nums(r.get("Ambient Pressure (atm)"))),
             accession="PSI-68", investigation="FLEX-2", test_id="matrix",
             fuel=r.get("Sample (Fuel Type)"), fuel_phase="liquid", config="droplet (MDCA)",
             o2_min_pct=o2[0], o2_max_pct=o2[1], pressure_min_atm=p[0], pressure_max_atm=p[1],
@@ -331,6 +333,7 @@ def acme_bre():
             accession="PSI-20", investigation="ACME BRE", test_id=f"{r.get('Year')}-{r.get('Month')}-{r.get('Date')}",
             fuel=r.get("Fuel Bottle"), fuel_phase="gas (solid emulator)", config="porous burner emulating burning solid (CIR)",
             o2_min_pct=min(o2) if o2 else "", o2_max_pct=max(o2) if o2 else "",
+            o2_levels_pct=";".join(str(v) for v in o2),
             diluent="N2", sample_size=f"burner {r.get('Burner Size (mm)')} mm",
             size_mm=one(r.get("Burner Size (mm)")), flames_ignited=one(r.get("Flames Ignited")),
             outcome=f"{r.get('Flames Ignited')} flames ignited",

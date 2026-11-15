@@ -175,15 +175,23 @@ def main() -> None:
     # compact test rows for the chart: [accession, name, o2, p, phase, o2_assumed(0/1), fuel, test_id, config]
     name_of = {c["accession"]: c["name"] for c in cards}
     rows = []
+    def levels(text):
+        return [float(x) for x in str(text).split(";") if x.strip() not in ("", "nan")]
+
     for r in tests.itertuples():
         if math.isnan(r.o2_min_pct) if isinstance(r.o2_min_pct, float) else False:
             continue
-        o2 = (r.o2_min_pct + r.o2_max_pct) / 2
-        p = None if isinstance(r.pressure_min_atm, float) and math.isnan(r.pressure_min_atm) \
-            else round((r.pressure_min_atm + r.pressure_max_atm) / 2, 3)
-        rows.append([r.accession, name_of.get(r.accession, r.investigation), round(o2, 2), p,
-                     r.fuel_phase, int(isinstance(r.assumed, str) and "o2" in r.assumed),
-                     str(r.fuel)[:40], str(r.test_id), str(r.config)])
+        # rows that list several discrete levels (BRE days, FLEX-2 matrix) become one point per level,
+        # instead of a misleading midpoint
+        o2s = levels(r.o2_levels_pct) or [(r.o2_min_pct + r.o2_max_pct) / 2]
+        no_p = isinstance(r.pressure_min_atm, float) and math.isnan(r.pressure_min_atm)
+        ps = levels(r.p_levels_atm) or [None if no_p else (r.pressure_min_atm + r.pressure_max_atm) / 2]
+        for o2 in o2s:
+            for p in ps:
+                rows.append([r.accession, name_of.get(r.accession, r.investigation), round(o2, 2),
+                             None if p is None else round(p, 3),
+                             r.fuel_phase, int(isinstance(r.assumed, str) and "o2" in r.assumed),
+                             str(r.fuel)[:40], str(r.test_id), str(r.config)])
 
     # computed gaps
     t = tests.copy()

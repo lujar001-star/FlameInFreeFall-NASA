@@ -377,6 +377,10 @@
     <h2>Test conditions: oxygen and pressure</h2>
     <p class="lede">Each dot is one test (or one condition row for summary tables). Shaded boxes are crew-environment targets. Hollow dots use assumed cabin-air values. Hover for details; click legend items to hide fuel types.</p>
     <div class="controls">
+      <label style="color:var(--text)">Highlight <input type="search" id="chartSearch" placeholder="e.g. FLEX, PMMA, propane, heptane" aria-label="Highlight tests on the chart" style="background:var(--black);border:1px solid var(--line);padding:7px 10px;border-radius:4px;width:260px"></label>
+      <span class="muted" id="chartSearchCount" style="font-size:14px"></span>
+    </div>
+    <div class="controls">
       <label><input type="checkbox" id="hideInverse"> Hide inverse flames (O<sub>2</sub> is in the burner stream, not the room air)</label>
       <label><input type="checkbox" id="hideAssumed"> Hide assumed values</label>
     </div>
@@ -395,6 +399,11 @@
     <h2>Compare investigations</h2>
     <p class="lede">Choose up to three. Rows where the investigations agree are tinted, so shared conditions and hardware stand out.</p>
     <div class="compare-pick" id="comparePick"></div>
+    <h3 class="section" style="margin-top:10px">Where their tests sit</h3>
+    <p class="lede" style="margin-bottom:14px">Each investigation's tests in its own color, against the crew-environment targets. Hollow markers use assumed cabin air.</p>
+    <div id="compareChart" class="chartbox" role="img" aria-label="Oxygen versus pressure for the selected investigations"></div>
+    <div class="stats" id="compareBars" style="margin-top:18px"></div>
+    <h3 class="section">Side by side</h3>
     <div class="tablewrap"><table class="compare" id="compareTable"></table></div>
   </div>
 </section>
@@ -635,6 +644,7 @@
     if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
     if (id === 'conditions') drawChart();
     if (id === 'modeling') renderExplorer();
+    if (id === 'compare') drawCompareChart();
   }
   tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
   document.addEventListener('click', e => {
@@ -822,49 +832,76 @@
     document.body.appendChild(dl); dl.click(); dl.remove(); URL.revokeObjectURL(url);
   }, true);
 
+  /* ---------- Shared O2-vs-pressure layout with habitat target boxes ---------- */
+  const NO_P_Y = 3.72;  // tests whose table gives no pressure (e.g. ACME BRE) are drawn along this strip
+  const pY = t => t[3] === null ? NO_P_Y : t[3];
+  // [label, x0, x1, y0, y1, color, label x, label y]
+  const BOXES = [
+    ['ISS / cabin', 20.5, 21.5, 0.97, 1.03, '#f3e6c8', 21, 1.16],
+    ['Exploration atm.', 26, 27, 0.66, 0.73, '#9fd3ff', 26.5, 0.30],
+    ['Moon base / rover · Mars', 30, 34, 0.558, 0.694, '#ff5a6e', 41, 0.18],
+    ['Spacesuit', 98, 100, 0.27, 0.32, '#ff8a98', 96, 0.48],
+  ];
+  function o2pLayout(extra = {}) {
+    return {
+      paper_bgcolor: '#2b0610', plot_bgcolor: '#2b0610', font: {family: 'Public Sans, Arial', color: '#f1e1e4', size: 13},
+      margin: {l: 64, r: 20, t: 20, b: 56},
+      xaxis: {title: 'Oxygen concentration (% by volume)', range: [0, 102], gridcolor: '#4a1a25', zeroline: false},
+      yaxis: {title: 'Pressure (atm)', range: [0, 3.85], gridcolor: '#4a1a25', zeroline: false,
+        tickvals: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5], ticktext: ['0', '0.5', '1', '1.5', '2', '2.5', '3', '3.5']},
+      legend: {orientation: 'h', y: -0.18, bgcolor: 'rgba(0,0,0,0)'},
+      shapes: [...BOXES.map(b => ({type: 'rect', x0: b[1], x1: b[2], y0: b[3], y1: b[4], line: {color: b[5], width: 2}, fillcolor: b[5], opacity: 0.45, layer: 'below'})),
+        {type: 'line', x0: 0, x1: 102, y0: NO_P_Y - 0.12, y1: NO_P_Y - 0.12, line: {color: '#6a3a45', width: 1, dash: 'dot'}}],
+      annotations: [...BOXES.map(b => ({x: b[6], y: b[7], ax: 0, ay: 0, text: '<b>' + b[0] + '</b>', showarrow: false,
+        font: {color: b[5], size: 12}, bgcolor: 'rgba(43,6,16,0.85)'})),
+        {x: 101, y: NO_P_Y, xanchor: 'right', text: 'pressure not reported', showarrow: false, font: {color: '#c9a0aa', size: 11}}],
+      ...extra,
+    };
+  }
+
   /* ---------- Condition map ---------- */
   function drawChart() {
     const el = document.getElementById('chart');
     if (!window.Plotly) { el.innerHTML = '<p class="empty">Chart library could not load (offline?).</p>'; return; }
     const hideInv = document.getElementById('hideInverse').checked;
     const hideAsm = document.getElementById('hideAssumed').checked;
-    const pts = D.tests.filter(t => t[3] !== null && !(hideInv && t[8].includes('inverse')) && !(hideAsm && t[5]));
+    const pts = D.tests.filter(t => !(hideInv && t[8].includes('inverse')) && !(hideAsm && t[5]));
+    const q = document.getElementById('chartSearch').value.trim().toLowerCase();
+    const terms = q.split(/\s+/).filter(Boolean);
+    const hit = t => terms.every(w => [t[0], t[1], t[6], t[7], t[8], t[4]].join(' ').toLowerCase().includes(w));
+    const shown = terms.length ? pts.filter(hit) : pts;
     const traces = [];
+    if (terms.length) {
+      const rest = pts.filter(t => !hit(t));
+      traces.push({type: 'scattergl', mode: 'markers', name: 'Other tests', x: rest.map(t => t[2]), y: rest.map(pY),
+        hoverinfo: 'skip', marker: {size: 5, color: 'rgba(160,130,138,0.25)'}});
+      document.getElementById('chartSearchCount').textContent = `${shown.length} of ${pts.length} tests match "${q}"`;
+    } else document.getElementById('chartSearchCount').textContent = '';
     Object.keys(PHASE_COLOR).forEach(g => {
       [0, 1].forEach(asm => {
-        const sub = pts.filter(t => phaseGroup(t[4]) === g && t[5] === asm);
+        const sub = shown.filter(t => phaseGroup(t[4]) === g && t[5] === asm);
         if (!sub.length) return;
         const jit = sub.map((t, k) => ((k * 9301 + 49297) % 233280) / 233280 - 0.5);
         traces.push({
           type: 'scattergl', mode: 'markers', name: g + (asm ? ' (assumed)' : ''), legendgroup: g,
-          x: sub.map((t, k) => t[2] + (asm ? jit[k] * 0.8 : 0)), y: sub.map((t, k) => t[3] + (asm ? jit[k] * 0.04 : 0)),
-          customdata: sub.map(t => [t[1], t[6], t[7], t[2], t[3], t[8]]),
-          hovertemplate: '<b>%{customdata[0]}</b><br>%{customdata[1]} · %{customdata[5]}<br>Test %{customdata[2]}<br>O₂ %{customdata[3]}% · %{customdata[4]} atm' + (asm ? '<br><i>assumed cabin air</i>' : '') + '<extra></extra>',
-          marker: asm ? {size: 7, color: 'rgba(0,0,0,0)', line: {color: PHASE_COLOR[g], width: 1.2}} : {size: 7, color: PHASE_COLOR[g], opacity: 0.8},
+          x: sub.map((t, k) => t[2] + (asm ? jit[k] * 0.8 : 0)), y: sub.map((t, k) => pY(t) + (asm ? jit[k] * 0.04 : 0)),
+          customdata: sub.map(t => [t[1], t[6], t[7], t[2], t[3] === null ? 'pressure not reported' : t[3] + ' atm', t[8]]),
+          hovertemplate: '<b>%{customdata[0]}</b><br>%{customdata[1]} · %{customdata[5]}<br>Test %{customdata[2]}<br>O₂ %{customdata[3]}% · %{customdata[4]}' + (asm ? '<br><i>assumed cabin air</i>' : '') + '<extra></extra>',
+          marker: asm ? {size: terms.length ? 9 : 7, color: 'rgba(0,0,0,0)', line: {color: PHASE_COLOR[g], width: terms.length ? 2 : 1.2}}
+            : {size: terms.length ? 9 : 7, color: PHASE_COLOR[g], opacity: terms.length ? 1 : 0.8, line: terms.length ? {color: '#fff', width: 1} : {width: 0}},
         });
       });
     });
-    // [label, x0, x1, y0, y1, color, label x, label y]
-    const boxes = [
-      ['ISS / cabin', 20.5, 21.5, 0.97, 1.03, '#f3e6c8', 21, 1.16],
-      ['Exploration atm.', 26, 27, 0.66, 0.73, '#9fd3ff', 26.5, 0.30],
-      ['Moon base / rover · Mars', 30, 34, 0.558, 0.694, '#ff5a6e', 41, 0.18],
-      ['Spacesuit', 98, 100, 0.27, 0.32, '#ff8a98', 96, 0.48],
-    ];
-    const layout = {
-      paper_bgcolor: '#2b0610', plot_bgcolor: '#2b0610', font: {family: 'Public Sans, Arial', color: '#f1e1e4', size: 13},
-      margin: {l: 64, r: 20, t: 20, b: 56},
-      xaxis: {title: 'Oxygen concentration (% by volume)', range: [0, 102], gridcolor: '#4a1a25', zeroline: false},
-      yaxis: {title: 'Pressure (atm)', range: [0, 3.5], gridcolor: '#4a1a25', zeroline: false},
-      legend: {orientation: 'h', y: -0.18, bgcolor: 'rgba(0,0,0,0)'},
-      shapes: boxes.map(b => ({type: 'rect', x0: b[1], x1: b[2], y0: b[3], y1: b[4], line: {color: b[5], width: 2}, fillcolor: b[5], opacity: 0.45, layer: 'below'})),
-      annotations: boxes.map(b => ({x: b[6], y: b[7], ax: 0, ay: 0, text: '<b>' + b[0] + '</b>', showarrow: false,
-        font: {color: b[5], size: 12}, bgcolor: 'rgba(43,6,16,0.85)'})),
-    };
-    Plotly.react(el, traces, layout, {responsive: true, displaylogo: false});
-    document.getElementById('chartNote').textContent = `${pts.length} points shown. Pressure axis in atm (1 atm = 14.7 psi). Assumed points are jittered slightly so overlapping tests stay visible.`;
+    Plotly.react(el, traces, o2pLayout(), {responsive: true, displaylogo: false});
+    const noP = pts.filter(t => t[3] === null);
+    const noPNames = [...new Set(noP.map(t => t[1]))].join(', ');
+    document.getElementById('chartNote').textContent = `${pts.length} points shown. Pressure axis in atm (1 atm = 14.7 psi). ` +
+      (noP.length ? `${noP.length} points whose table gives no pressure (${noPNames}) are drawn along the top strip. ` : '') +
+      `Rows that list several oxygen or pressure levels (ACME BRE days, FLEX-2 test matrix) are shown as one point per level. Assumed points are jittered slightly so overlapping tests stay visible.`;
   }
   ['hideInverse', 'hideAssumed'].forEach(id => document.getElementById(id).addEventListener('change', drawChart));
+  let searchTimer;
+  document.getElementById('chartSearch').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(drawChart, 200); });
 
   const solidMax = G.solid_max_o2_measured;
   document.getElementById('o2bars').innerHTML = [
@@ -910,6 +947,32 @@
         const same = items.length > 1 && cells.every(c => c === cells[0]);
         return `<tr><td>${lab}</td>${cells.map(c => `<td class="${same ? 'same' : ''}">${c}</td>`).join('')}</tr>`;
       }).join('') + '</tbody>';
+    drawCompareChart();
+  }
+  const CMP_COLORS = ['#ffcc33', '#5bc0eb', '#ff8a98'];
+  function drawCompareChart() {
+    const el = document.getElementById('compareChart');
+    const picked = cmp.map((a, k) => ({a, k})).filter(x => x.a);
+    const moon = HAB["Moon base"].components, iss = HAB["ISS / spacecraft cabin"].components;
+    document.getElementById('compareBars').innerHTML = picked.map(({a, k}) => `
+      <div class="stat" style="border-top:3px solid ${CMP_COLORS[k]}"><div class="v" style="color:${CMP_COLORS[k]}">${moon[a].matching}</div>
+      <div class="k"><b>${esc(byAcc[a].name)}</b>: tests near Moon-base air (${iss[a].matching} near ISS cabin air, of ${byAcc[a].stats.tests})</div></div>`).join('');
+    if (!window.Plotly || !document.getElementById('view-compare').classList.contains('active')) return;
+    const traces = [];
+    picked.forEach(({a, k}) => {
+      const rows = D.tests.filter(t => t[0] === a);
+      [0, 1].forEach(asm => {
+        const sub = rows.filter(t => t[5] === asm);
+        if (!sub.length) return;
+        const jit = sub.map((t, n) => ((n * 9301 + 49297) % 233280) / 233280 - 0.5);
+        traces.push({type: 'scattergl', mode: 'markers', name: byAcc[a].name + (asm ? ' (assumed)' : ''), legendgroup: a,
+          x: sub.map((t, n) => t[2] + (asm ? jit[n] * 0.8 : 0)), y: sub.map((t, n) => pY(t) + (asm ? jit[n] * 0.04 : 0)),
+          customdata: sub.map(t => [t[6], t[7], t[2], t[3] === null ? 'pressure not reported' : t[3] + ' atm']),
+          hovertemplate: '<b>' + esc(byAcc[a].name) + '</b><br>%{customdata[0]} · test %{customdata[1]}<br>O₂ %{customdata[2]}% · %{customdata[3]}<extra></extra>',
+          marker: asm ? {size: 8, color: 'rgba(0,0,0,0)', line: {color: CMP_COLORS[k], width: 1.5}} : {size: 8, color: CMP_COLORS[k], opacity: 0.85}});
+      });
+    });
+    Plotly.react(el, traces, o2pLayout({legend: {orientation: 'h', y: -0.2, bgcolor: 'rgba(0,0,0,0)'}}), {responsive: true, displaylogo: false});
   }
   renderCompare();
 
