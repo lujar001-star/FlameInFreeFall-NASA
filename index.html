@@ -73,6 +73,28 @@
   .callout b { color:var(--gold); }
   .callout.alert { border-left-color:#ff5a6e; } .callout.alert b { color:#ff8a98; }
   .pill.evidence-psi { background:#1f6b4a; } .pill.evidence-related { background:#6b5a1f; } .pill.evidence-spinoff { background:transparent; border:1px solid #9a8a90; color:#d8c8cc; }
+  /* Ask the data */
+  .ask-fab { position:fixed; right:22px; bottom:22px; z-index:50; background:var(--gold); color:#2b0610; font-weight:800; font-size:15px; padding:13px 20px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.45); }
+  .ask-fab:hover { background:#ffe08a; }
+  .ask-panel { position:fixed; right:22px; bottom:84px; z-index:50; width:420px; max-width:calc(100vw - 32px); height:min(600px, calc(100vh - 120px)); display:flex; flex-direction:column; background:var(--black); border:1px solid var(--line); border-top:3px solid var(--gold); border-radius:6px; box-shadow:0 16px 40px rgba(0,0,0,.55); }
+  .ask-panel[hidden] { display:none; }
+  .ask-head { display:flex; justify-content:space-between; gap:12px; padding:12px 14px; border-bottom:1px solid var(--line); }
+  .ask-head b { font-size:16px; } .ask-head small { display:block; color:var(--muted); font-size:12px; margin-top:2px; }
+  .ask-head button { font-size:18px; padding:0 6px; }
+  .ask-log { flex:1; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+  .msg { max-width:92%; padding:9px 12px; border-radius:8px; font-size:14.5px; line-height:1.45; }
+  .msg.user { align-self:flex-end; background:#7a0019; }
+  .msg.bot { align-self:flex-start; background:#3a1520; color:#f1e1e4; }
+  .msg.bot ul { padding-left:18px; margin:6px 0; display:grid; gap:3px; }
+  .msg.bot a, .msg.bot .act { color:var(--gold); border-bottom:1px solid var(--gold); cursor:pointer; }
+  .msg.bot .src { display:block; margin-top:6px; font-size:12px; color:var(--muted); }
+  .ask-suggest { display:flex; flex-wrap:nowrap; overflow-x:auto; gap:6px; padding:8px 14px; border-top:1px solid var(--line); scrollbar-width:thin; }
+  .ask-suggest button { flex:none; font-size:12.5px; border:1px solid var(--line); border-radius:999px; padding:4px 10px; background:#22080e; white-space:nowrap; }
+  .ask-suggest button:hover { border-color:var(--gold); }
+  .ask-form { display:flex; gap:8px; padding:10px 14px 14px; }
+  .ask-form input { flex:1; background:#22080e; border:1px solid var(--line); border-radius:4px; padding:9px 10px; }
+  .ask-form button { background:var(--gold); color:#2b0610; font-weight:700; padding:0 16px; border-radius:4px; }
+  @media (max-width:600px){ .ask-fab { right:14px; bottom:14px; padding:11px 16px; } .ask-panel { right:12px; left:12px; width:auto; bottom:72px; } }
   .cases { display:grid; gap:22px; }
   .case { display:grid; grid-template-columns:150px 1fr; gap:24px; background:var(--black); border:1px solid var(--line); border-left:4px solid var(--gold); padding:24px; border-radius:4px; }
   .case.scenario { border-left-color:#5bc0eb; }
@@ -526,6 +548,8 @@
       <li><b>Challenge Resources tab</b><span>Datasets and reference material provided for the hackathon. <a href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=details" target="_blank" rel="noopener">Open challenge page</a></span></li>
       <li><b>Project repository</b><span>Source code and documentation for this dashboard. <a href="https://github.com/lujar001-star/FlameInFreeFall-NASA" target="_blank" rel="noopener">Open on GitHub</a></span></li>
     </ul>
+    <h3 class="section">About "Ask the data"</h3>
+    <p class="lede">The chat assistant is rule-based: it recognizes question patterns (habitats, investigations, oxygen and pressure levels, fuels, comparisons, gaps, pillars) and computes every answer from the same data this dashboard shows, citing where it came from. It does not call any AI service, so it cannot invent facts and works offline.</p>
     <h3 class="section">AI tools used</h3>
     <ul class="reslist">
       <li><b>Claude (Anthropic)</b><span>Data pipeline, analytics, insight-card drafting and web page development.</span></li>
@@ -560,6 +584,21 @@
   </div>
 </section>
 </main>
+
+<!-- ASK THE DATA -->
+<button class="ask-fab" id="askFab" type="button" aria-expanded="false" aria-controls="askPanel">💬 Ask the data</button>
+<section class="ask-panel" id="askPanel" role="dialog" aria-label="Ask the data" hidden>
+  <header class="ask-head">
+    <div><b>Ask the data</b><small>Answers computed from this dashboard's PSI data. No AI service; nothing leaves your browser.</small></div>
+    <button type="button" id="askClose" aria-label="Close">✕</button>
+  </header>
+  <div class="ask-log" id="askLog" aria-live="polite"></div>
+  <div class="ask-suggest" id="askSuggest"></div>
+  <form class="ask-form" id="askForm">
+    <input id="askInput" type="text" autocomplete="off" placeholder="e.g. What matters most for a lunar rover?" aria-label="Your question">
+    <button type="submit">Ask</button>
+  </form>
+</section>
 
 <footer>
   <div class="f-top">
@@ -598,6 +637,7 @@
   const phaseGroup = p => p.startsWith('solid') && !p.includes('smoke') ? 'Solid' : p.startsWith('liquid') ? 'Liquid'
     : p.includes('smoke') || p.startsWith('aerosol') ? 'Smoke / aerosol' : 'Gas';
   const PHASE_COLOR = {"Solid":"#ffcc33","Liquid":"#5bc0eb","Gas":"#f08a5d","Smoke / aerosol":"#b9a7ff"};
+  const FUEL_SYN = {ethylene: 'c2h4', methane: 'ch4', propane: 'c3h8', ethane: 'c2h6', dodecane: 'c12h26'};  // tables mix names and formulas
   const pillarPills = i => PILLARS.filter(p => i.pillars[p] >= 2).map(p => `<span class="pill ${cap(p)}">${cap(p)}</span>`).join('') || '<span class="pill">Related</span>';
   const assumedTag = i => i.stats.assumed_share > 0.5 ? ' <span class="pill assumed" title="Not recorded in the table; ISS cabin air assumed">assumed</span>' : '';
 
@@ -868,7 +908,8 @@
     const pts = D.tests.filter(t => !(hideInv && t[8].includes('inverse')) && !(hideAsm && t[5]));
     const q = document.getElementById('chartSearch').value.trim().toLowerCase();
     const terms = q.split(/\s+/).filter(Boolean);
-    const hit = t => terms.every(w => [t[0], t[1], t[6], t[7], t[8], t[4]].join(' ').toLowerCase().includes(w));
+    const hit = t => { const s = [t[0], t[1], t[6], t[7], t[8], t[4]].join(' ').toLowerCase();
+      return terms.every(w => s.includes(w) || (FUEL_SYN[w] && s.includes(FUEL_SYN[w]))); };
     const shown = terms.length ? pts.filter(hit) : pts;
     const traces = [];
     if (terms.length) {
@@ -1304,6 +1345,167 @@
       </article>`).join('');
   }
   renderEarth();
+
+  /* ---------- Ask the data (rule-based; every answer is computed from DASH) ---------- */
+  const ALIASES = [
+    ['PSI-159', ['cfi-g', 'cfi g', 'cfig', 'cool flames investigation with gases']], ['PSI-68', ['flex-2', 'flex 2', 'flex2']],
+    ['PSI-25', ['bass-ii', 'bass ii', 'bass-2', 'bass 2', 'bass2']], ['PSI-101', ['same-r', 'same r', 'samer']],
+    ['PSI-100', ['saffire-iii', 'saffire iii', 'saffire-3', 'saffire 3']], ['PSI-99', ['saffire-ii', 'saffire ii', 'saffire-2', 'saffire 2']],
+    ['PSI-98', ['saffire-i', 'saffire i', 'saffire-1', 'saffire 1']], ['PSI-10', ['flame design']], ['PSI-20', ['burning rate emulator', 'bre']],
+    ['PSI-21', ['cld flame', 'cld', 'coflow laminar']], ['PSI-22', ['e-field', 'efield', 'electric field', 'electric-field']],
+    ['PSI-23', ['s-flame', 'sflame']], ['PSI-39', ['cool flames investigation', 'cfi']], ['PSI-69', ['flex-1', 'flex 1', 'flex']],
+    ['PSI-26', ['bass']], ['PSI-47', ['daft']], ['PSI-107', ['spice', 'smoke point']], ['PSI-106', ['slice']], ['PSI-102', ['same']],
+  ];
+  const HAB_WORDS = [[/rover/, 'Pressurized rover'], [/mars|martian/, 'Mars habitat'], [/moon|lunar/, 'Moon base'],
+    [/space ?suit|\bsuit\b|\beva\b/, 'Spacesuit'], [/exploration atmosphere|orion|gateway|10\.2 ?psi/, 'Exploration atmosphere'],
+    [/\biss\b|space station|spacecraft cabin|cabin air/, 'ISS / spacecraft cabin']];
+  const FUEL_WORDS = [...new Set(D.tests.flatMap(t => String(t[6]).toLowerCase().match(/[a-z]{4,}/g) || []))]
+    .filter(w => !['with', 'balance', 'including', 'pure', 'fabric', 'ambient', 'mixture', 'same', 'conditions', 'calibration', 'tests', 'test', 'pyrometry', 'fans', 'film', 'micron', 'wide', 'clear', 'black', 'sphere', 'blend', 'sample', 'arizona', 'road', 'dust', 'fine', 'combination', 'create', 'aerosol', 'measurement', 'purposes', 'previous'].includes(w));
+  const link = (acc) => byAcc[acc] ? `<a data-open="${acc}">${esc(byAcc[acc].name)}</a>` : esc(acc);
+  const src = s => `<span class="src">From: ${s}</span>`;
+
+  function findInvs(raw) {
+    let q = ' ' + raw.toLowerCase().replace(/[?!.,]/g, ' ') + ' ';
+    const found = [];
+    (q.match(/psi-?\s?(\d+)/g) || []).forEach(m => { const a = 'PSI-' + m.replace(/\D/g, ''); if (byAcc[a]) found.push(a); });
+    if (/\bsaffire\b(?![- ]?(i|1|2|3)\b)/.test(q)) found.push('PSI-98', 'PSI-99', 'PSI-100');
+    for (const [acc, names] of ALIASES) {
+      for (const n of names) {
+        const re = new RegExp('(^|[^a-z0-9-])' + n.split(/[- ]/).join('[- ]?') + '(?![a-z0-9-])');
+        if (acc === 'PSI-102' && !/\bSAME\b/.test(raw) && !/same (experiment|investigation|smoke)/i.test(raw)) continue;
+        if (re.test(q)) { found.push(acc); q = q.replace(re, ' '); break; }
+      }
+    }
+    return [...new Set(found)].filter(a => byAcc[a]);
+  }
+  function scoreHab(name) {
+    const h = HAB[name], w = h.weights, W = D.weights, wsum = PILLARS.reduce((a, p) => a + w[p], 0) || 1;
+    return INV.map(i => {
+      const c = h.components[i.accession];
+      const focus = PILLARS.reduce((a, p) => a + w[p] * i.pillars[p] / 3, 0) / wsum;
+      return {i, c, score: 100 * (W.conditions * c.conditions + W.safety_focus * focus + W.fuel * c.fuel + W.data * c.data)};
+    }).sort((a, b) => b.score - a.score);
+  }
+  function oxygenAnswer(op, val) {
+    const pts = D.tests.filter(t => op === '>' ? t[2] > val : op === '>=' ? t[2] >= val : t[2] < val);
+    const by = {}; pts.forEach(t => by[t[0]] = (by[t[0]] || 0) + 1);
+    const solid = pts.filter(t => phaseGroup(t[4]) === 'Solid').length;
+    const list = Object.entries(by).sort((a, b) => b[1] - a[1]);
+    if (!list.length) return `No tests ${op === '<' ? 'below' : 'above'} ${val}% O₂ in PSI.` + src('Test Conditions data');
+    return `<b>${pts.length}</b> test points are ${op === '<' ? 'below' : 'above'} ${val}% O₂, from ${list.length} investigation(s):<ul>${list.map(([a, n]) => `<li>${link(a)}: ${n}</li>`).join('')}</ul>` +
+      `${solid} of them are solid-material tests.` + (op !== '<' && val >= 23 ? ` (Inverse ACME flames carry their O₂ in the burner stream, not the room air.)` : '') +
+      ` <span class="act" data-ask-go="conditions">Open the condition map</span>` + src('Test Conditions data (one point per listed level)');
+  }
+  function answer(raw) {
+    const q = raw.toLowerCase().replace(/o₂/g, 'o2');
+    const invs = findInvs(raw);
+    const hab = (HAB_WORDS.find(([re]) => re.test(q)) || [])[1];
+    const num = (q.match(/(above|over|more than|greater than|at least|exceed\w*|>=?|below|under|less than|<)\s*(\d+(?:\.\d+)?)\s*%?/) || []);
+    const fuels = FUEL_WORDS.filter(w => new RegExp('\\b' + w + '\\b').test(q));
+
+    if (/^(hi|hello|hey)\b|help|what can (you|i)|how does this work/.test(q))
+      return `I answer from this dashboard's data, not from an AI service. Try asking about a habitat ("lunar rover"), an investigation ("What did BRE find?"), oxygen levels ("tests above 30% oxygen"), a material ("PMMA"), comparisons ("compare FLEX and BASS"), gaps, modeling data, detection or suppression.`;
+
+    if (invs.length >= 2 && /compar|\bvs\b|versus|differ|between/.test(q)) {
+      const items = invs.slice(0, 3).map(a => byAcc[a]);
+      return `${items.map(i => `<b>${esc(i.name)}</b>: ${esc(i.fuel_phase)}, ${i.stats.tests} tests, O₂ ${fmtR(i.stats.o2)}%, ${esc(i.family)}.`).join('<br>')}` +
+        (new Set(items.map(i => i.family)).size === 1 ? `<br>They share hardware (${esc(items[0].family)}), so their setups are directly comparable.` : '') +
+        ` <span class="act" data-ask-cmp="${items.map(i => i.accession).join(',')}">Open them in Compare</span>` + src('Compare tab and insight cards');
+    }
+    if (num[2] && /o2|oxygen|%/.test(q)) {
+      const v = +num[2], below = /below|under|less|</.test(num[1]);
+      if (v > 0 && v <= 100) return oxygenAnswer(below ? '<' : (num[1].includes('least') || num[1] === '>=') ? '>=' : '>', v);
+    }
+    if (/highest|maximum|max(imum)? oxygen|most oxygen/.test(q) && /o2|oxygen/.test(q))
+      return `The highest O₂ in PSI combustion tests is <b>${G.max_o2}%</b> (ACME inverse flames, where oxygen flows from the burner). For solid materials the highest measured O₂ is <b>${G.solid_max_o2_measured}%</b>, in ${link('PSI-25')}.` + src('Overview key numbers');
+    if (num[2] && /atm|psi|pressure/.test(q)) {
+      let v = +num[2]; if (/psi/.test(q)) v = v / 14.696;
+      const below = /below|under|less|</.test(num[1]);
+      const pts = D.tests.filter(t => t[3] !== null && (below ? t[3] < v : t[3] > v)); const by = {};
+      pts.forEach(t => by[t[0]] = (by[t[0]] || 0) + 1);
+      return `<b>${pts.length}</b> test points are ${below ? 'below' : 'above'} ${v.toFixed(2)} atm (${(v * 14.696).toFixed(1)} psi):<ul>${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([a, n]) => `<li>${link(a)}: ${n}</li>`).join('') || '<li>none</li>'}</ul>` + src('Test Conditions data');
+    }
+    if (/gravity|partial|1\/6|3\/8/.test(q))
+      return `PSI has <b>${G.partial_gravity_tests}</b> partial-gravity combustion tests. Microgravity and 1-g results bound lunar and Martian behavior, and ${link('PSI-22')} mimics a weak body force with electric fields on flame ions. LUCI and FM2 are expected to add lunar-gravity data.` + src('Overview and E-FIELD insight card');
+    if (hab && !invs.length) {
+      const r = scoreHab(hab), h = HAB[hab], near = INV.filter(i => h.components[i.accession].matching > 0);
+      const nNear = near.reduce((a, i) => a + h.components[i.accession].matching, 0);
+      const solidNear = INV.filter(i => i.fuel_phase === 'solid').reduce((a, i) => a + h.components[i.accession].matching, 0);
+      return `For a <b>${esc(hab.toLowerCase())}</b> (${habLabel(hab)}), the most relevant datasets are ${r.slice(0, 3).map(x => `${link(x.i.accession)} (${x.score.toFixed(0)})`).join(', ')}.` +
+        (!nNear ? ` <b>No PSI test comes near this atmosphere</b>, so that ranking reflects safety focus and fuel type only: a real data gap.`
+          : ` ${nNear} tests from ${near.length} investigations are near this atmosphere` +
+            (solidNear ? `, including ${solidNear} solid-material tests.` : `, but <b>none</b> of them are solid materials (fabrics, plastics).`)) +
+        ` ${esc(h.note)} <span class="act" data-ask-hab="${esc(hab)}">See the full ranking</span>` + src('Mission Relevance scores with this environment\'s default weights');
+    }
+    if (invs.length >= 2) {
+      const items = invs.map(a => byAcc[a]);
+      return `${items.map(i => `<b>${link(i.accession)}</b>: ${esc(i.takeaway)} <i>(${i.stats.tests} tests, O₂ ${fmtR(i.stats.o2)}%)</i>`).join('<br><br>')}` +
+        ` <span class="act" data-ask-cmp="${items.slice(0, 3).map(i => i.accession).join(',')}">Compare them</span>` + src('insight cards');
+    }
+    if (invs.length === 1) {
+      const i = byAcc[invs[0]];
+      return `<b>${esc(i.full_name)}</b> (${esc(i.accession)}): ${esc(i.summary)}<br><br><b>Takeaway:</b> ${esc(i.takeaway)}<br><br>${i.stats.tests} tests · O₂ ${fmtR(i.stats.o2)}% · pressure ${fmtR(i.stats.pressure, 2)} atm. ${link(i.accession)} for the full card.` + src(esc(i.verified || 'insight card'));
+    }
+    const SYN = FUEL_SYN;
+    Object.keys(SYN).forEach(w => { if (new RegExp('\\b' + w + '\\b').test(q) && !fuels.includes(w)) fuels.push(w); });
+    if (fuels.length) {
+      const terms = fuels.slice(0, 2);
+      const has = (t, w) => { const f = String(t[6]).toLowerCase(); return f.includes(w) || (SYN[w] && f.includes(SYN[w])); };
+      const pts = D.tests.filter(t => terms.every(w => has(t, w)));
+      const by = {}; pts.forEach(t => by[t[0]] = (by[t[0]] || 0) + 1);
+      const o2s = pts.map(t => t[2]);
+      return `<b>${pts.length}</b> test points used ${esc(terms.join(' + '))}, from: <ul>${Object.entries(by).sort((a, b) => b[1] - a[1]).map(([a, n]) => `<li>${link(a)}: ${n}</li>`).join('')}</ul>` +
+        (o2s.length ? `O₂ range ${Math.min(...o2s)}–${Math.max(...o2s)}%. ` : '') +
+        `<span class="act" data-ask-hl="${esc(terms.join(' '))}">Highlight them on the chart</span>` + src('Test Conditions data (fuel column)');
+    }
+    const pillar = /detect|smoke|alarm|sensor/.test(q) ? 'detection' : /suppress|extinguish|put out|agent|co2|helium/.test(q) ? 'suppression'
+      : /prevent|material|flammab|ignit/.test(q) ? 'prevention' : null;
+    if (pillar) {
+      const list = INV.filter(i => i.pillars[pillar] >= 2).sort((a, b) => b.pillars[pillar] - a.pillars[pillar]);
+      const eq = EQUIP.filter(e => e.p === pillar);
+      return `For <b>${pillar}</b>, the key investigations are ${list.map(i => link(i.accession)).join(', ')}.` +
+        `<ul>${eq.map(e => `<li><b>${esc(e.t)}:</b> ${esc(e.n)}</li>`).join('')}</ul><span class="act" data-ask-go="firesafety">Open Equipment &amp; Controls</span>` + src('Equipment & Controls cards (PSI research impacts)');
+    }
+    if (/gap|missing|lack|not (been )?tested|unknown|need(ed)? (data|experiment)/.test(q))
+      return `The biggest gaps in PSI data:<ul><li>All ${G.solid_tests} solid-material tests were run at or below ${G.solid_max_o2_measured}% O₂: none at Moon-base levels (30%+).</li><li>No partial-gravity (Moon or Mars) combustion tests; ${link('PSI-22')} is only an analog.</li><li>Vehicle-scale fire data (Saffire) exists only at 21% O₂.</li><li>No test comes near spacesuit conditions (100% O₂, 4.3 psi).</li></ul>` + src('Overview gap analysis');
+    if (/model|predict|dataset|fit|csv|download|data for/.test(q))
+      return `Model-ready datasets (varied conditions + measured results): ${ready.map(r => link(r.i.accession)).join(', ')}. tests.csv has every test's conditions and results in common units. <span class="act" data-ask-go="modeling">Open Modeling Data</span>` + src('Modeling Data tab');
+    if (/earth|hospital|terrestrial|home|aircraft|submarine/.test(q))
+      return `PSI data applies on Earth to: ${EARTH.map(e => esc(e.t.toLowerCase())).join('; ')}. <span class="act" data-ask-go="earth">Open Earth Applications</span>` + src('Earth Applications tab');
+    if (/apollo|mir|artemis|history|accident|incident|case/.test(q))
+      return `Case studies cover Apollo 1, Apollo 13, the Mir fire, the 2006 ISS smoke event, the Artemis II alarm and a lunar rover scenario. <span class="act" data-ask-go="cases">Open Case Studies</span>` + src('Case Studies tab');
+    if (/how many|number of|count/.test(q) && /test/.test(q))
+      return `There are <b>${G.tests_total.toLocaleString()}</b> tests from ${INV.length} investigations. Largest: ${INV.slice().sort((a, b) => b.stats.tests - a.stats.tests).slice(0, 4).map(i => `${link(i.accession)} (${i.stats.tests})`).join(', ')}.` + src('tests.csv');
+    return `I couldn't match that to the data. I can answer about habitats (Moon base, rover, ISS, Mars, spacesuit), a named investigation (FLEX, BRE, BASS-II…), oxygen or pressure levels, a fuel or material (PMMA, heptane, propane…), comparisons, gaps, modeling data, detection, suppression or Earth uses.`;
+  }
+
+  const ASK_SUGGEST = ['What matters most for a lunar rover?', 'Tests above 30% oxygen', 'What did BRE find?', 'Compare FLEX and BASS-II', 'Which tests used PMMA?', 'What are the biggest gaps?', 'Best data for modeling', 'Smoke detection research'];
+  const askPanel = document.getElementById('askPanel'), askFab = document.getElementById('askFab'), askLog = document.getElementById('askLog');
+  function say(text, who) {
+    const m = document.createElement('div'); m.className = 'msg ' + who;
+    if (who === 'user') m.textContent = text; else m.innerHTML = text;
+    askLog.appendChild(m); askLog.scrollTop = askLog.scrollHeight;
+  }
+  function ask(text) { if (!text.trim()) return; say(text, 'user'); say(answer(text), 'bot'); }
+  function toggleAsk(open) {
+    askPanel.hidden = !open; askFab.setAttribute('aria-expanded', open);
+    if (open) { if (!askLog.children.length) say('Hi! Ask me about the PSI fire-safety data. Every answer is computed from this dashboard and links to where it comes from.', 'bot'); document.getElementById('askInput').focus(); }
+  }
+  document.getElementById('askSuggest').innerHTML = ASK_SUGGEST.map(s => `<button type="button" data-ask="${esc(s)}">${esc(s)}</button>`).join('');
+  askFab.addEventListener('click', () => toggleAsk(askPanel.hidden));
+  document.getElementById('askClose').addEventListener('click', () => toggleAsk(false));
+  document.getElementById('askForm').addEventListener('submit', e => { e.preventDefault(); const i = document.getElementById('askInput'); ask(i.value); i.value = ''; });
+  askPanel.addEventListener('click', e => {
+    const s = e.target.closest('[data-ask]'); if (s) return ask(s.dataset.ask);
+    const g = e.target.closest('[data-ask-go]'); if (g) show(g.dataset.askGo);
+    const h = e.target.closest('[data-ask-hab]');
+    if (h) { rstate.hab = h.dataset.askHab; rstate.w = {...HAB[rstate.hab].weights}; renderHabitats(); renderWeights(); renderRank(); show('relevance'); }
+    const hl = e.target.closest('[data-ask-hl]');
+    if (hl) { document.getElementById('chartSearch').value = hl.dataset.askHl; show('conditions'); }
+    const c = e.target.closest('[data-ask-cmp]');
+    if (c) { const a = c.dataset.askCmp.split(','); [0, 1, 2].forEach(k => cmp[k] = a[k] || ''); show('compare'); renderCompare(); }
+    if ((g || h || hl || c || e.target.closest('[data-open]')) && window.matchMedia('(max-width:600px)').matches) toggleAsk(false);
+  });
 
   /* ---------- Citations ---------- */
   document.getElementById('citeList').innerHTML = INV.filter(i => i.doi).map(i =>
