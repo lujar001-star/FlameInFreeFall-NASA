@@ -240,6 +240,8 @@
   .avatar { width:76px; height:76px; border-radius:50%; background:#ffcc33; color:#7a0019; font-weight:800; font-size:28px; display:grid; place-items:center; margin-bottom:18px; }
   .member h3 { font-size:22px; margin-bottom:2px; }
   .member .role { color:#ffcc33; font-weight:600; font-size:15px; margin-bottom:6px; }
+  .contact-links { display:flex; flex-wrap:wrap; gap:18px; }
+  .email-text { color:var(--muted); font-size:14px; margin-top:8px; word-break:break-all; }
   .team-intro { display:flex; gap:28px; align-items:center; margin-bottom:40px; flex-wrap:wrap; }
   .team-intro img { width:110px; height:110px; border-radius:50%; }
   .team-intro p { color:var(--muted); max-width:620px; }
@@ -576,13 +578,21 @@
         <div class="avatar" aria-hidden="true">IF</div>
         <h3>Isaac Fouts</h3>
         <p class="role">Web page developer</p>
-        <a class="go" href="https://www.linkedin.com/in/isaacfouts/" target="_blank" rel="noopener">LinkedIn</a>
+        <div class="contact-links">
+          <a class="go email" data-user="fouts017" data-domain="umn.edu" href="#team">✉ Email</a>
+          <a class="go" href="https://www.linkedin.com/in/isaacfouts/" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+        <p class="email-text" data-user="fouts017" data-domain="umn.edu"></p>
       </article>
       <article class="card member">
         <div class="avatar" aria-hidden="true">FL</div>
         <h3>Fabian Lujardo</h3>
         <p class="role">Data analyst</p>
-        <a class="go" href="https://www.linkedin.com/in/fabian-lujardo" target="_blank" rel="noopener">LinkedIn</a>
+        <div class="contact-links">
+          <a class="go email" data-user="lujar001" data-domain="umn.edu" href="#team">✉ Email</a>
+          <a class="go" href="https://www.linkedin.com/in/fabian-lujardo" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+        <p class="email-text" data-user="lujar001" data-domain="umn.edu"></p>
       </article>
     </div>
     <div class="callout"><b>Project repository:</b> source code and documentation are on <a href="https://github.com/lujar001-star/FlameInFreeFall-NASA" target="_blank" rel="noopener" style="text-decoration:underline">GitHub</a>.</div>
@@ -615,7 +625,7 @@
     <div class="f-links">
       <ul><li><a href="#" data-go="overview">Overview</a></li><li><a href="#" data-go="relevance">Mission Relevance</a></li><li><a href="#" data-go="investigations">Investigations</a></li></ul>
       <ul><li><a href="#" data-go="conditions">Test Conditions</a></li><li><a href="#" data-go="compare">Compare</a></li><li><a href="#" data-go="modeling">Modeling Data</a></li><li><a href="#" data-go="firesafety">Fire Safety &amp; Equipment</a></li><li><a href="#" data-go="cases">Case Studies</a></li><li><a href="#" data-go="earth">Earth Applications</a></li></ul>
-      <ul><li><a href="#" data-go="resources">Methodology</a></li><li><a href="#" data-go="hardware">Hardware</a></li><li><a href="#" data-go="team">Team</a></li></ul>
+      <ul><li><a href="#" data-go="resources">Methodology</a></li><li><a href="#" data-go="hardware">Hardware</a></li><li><a href="#" data-go="team">Team</a></li><li><a href="#" data-go="team">Contact us</a></li></ul>
     </div>
     <div class="f-social"><h3>External links</h3><ul><li><a href="https://github.com/lujar001-star/FlameInFreeFall-NASA" target="_blank" rel="noopener">GitHub repository</a></li><li><a href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=details" target="_blank" rel="noopener">Challenge brief</a></li><li><a href="https://psi.nasa.gov/physci/repo/search?q=combustion&amp;data_source=psi&amp;data_type=investigation" target="_blank" rel="noopener">NASA PSI database</a></li></ul></div>
   </div>
@@ -1512,6 +1522,13 @@
     const c = e.target.closest('[data-ask-cmp]');
     if (c) { const a = c.dataset.askCmp.split(','); [0, 1, 2].forEach(k => cmp[k] = a[k] || ''); show('compare'); renderCompare(); }
     if ((g || h || hl || c || e.target.closest('[data-open]')) && window.matchMedia('(max-width:600px)').matches) toggleAsk(false);
+  });
+
+  /* ---------- Team emails: assembled at page load so simple spam scrapers do not see full addresses in the HTML ---------- */
+  document.querySelectorAll('[data-user][data-domain]').forEach(el => {
+    const addr = el.dataset.user + '@' + el.dataset.domain;
+    if (el.tagName === 'A') { el.href = 'mailto:' + addr; el.title = addr; }
+    else el.textContent = addr;
   });
 
   /* ---------- Citations ---------- */
