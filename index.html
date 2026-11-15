@@ -77,6 +77,24 @@
   .callout b { color:var(--gold); }
   .callout.alert { border-left-color:#ff5a6e; } .callout.alert b { color:#ff8a98; }
   .pill.evidence-psi { background:#1f6b4a; } .pill.evidence-related { background:#6b5a1f; } .pill.evidence-spinoff { background:transparent; border:1px solid #9a8a90; color:#d8c8cc; }
+  /* Flame lab */
+  .flamelab { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:22px; align-items:start; }
+  .flame-stage { position:relative; background:#05030a; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  #flameCanvas { width:100%; height:auto; display:block; }
+  .flame-tag { position:absolute; left:12px; top:10px; font-size:13px; font-weight:700; color:#f1e1e4; background:rgba(0,0,0,.45); padding:4px 10px; border-radius:4px; }
+  .flame-controls { background:var(--black); border:1px solid var(--line); border-radius:6px; padding:16px 18px; display:grid; gap:14px; }
+  .flame-presets { display:flex; flex-wrap:wrap; gap:6px; }
+  .flame-presets button { font-size:13px; border:1px solid var(--line); border-radius:999px; padding:5px 11px; background:#22080e; }
+  .flame-presets button[aria-pressed="true"] { background:#ffcc33; color:#2b0610; border-color:#ffcc33; }
+  .fs { display:grid; gap:4px; font-size:14px; color:var(--muted); }
+  .fs b { color:#fff; font-weight:700; }
+  .fs input[type=range] { width:100%; }
+  .ticks { display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); }
+  .flame-data { font-size:14px; color:#eadde0; border-top:1px solid var(--line); padding-top:12px; line-height:1.5; }
+  .flame-data b { color:var(--gold); }
+  .flame-data .warn { color:#ff8a98; }
+  @media (max-width:900px){ .flamelab { grid-template-columns:1fr; } }
+
   /* Ask the data */
   .ask-fab { position:fixed; right:22px; bottom:22px; z-index:50; background:var(--gold); color:#2b0610; font-weight:800; font-size:15px; padding:13px 20px; border-radius:999px; box-shadow:0 8px 24px rgba(0,0,0,.45); }
   .ask-fab:hover { background:#ffe08a; }
@@ -299,7 +317,7 @@
           <li><button type="button" data-tab="relevance" aria-selected="false">Mission Relevance<small>Rank investigations for your habitat</small></button></li>
           <li><button type="button" data-tab="investigations" aria-selected="false">Investigations<small>Insight cards for all 19 studies</small></button></li>
           <li><button type="button" data-tab="conditions" aria-selected="false">Test Conditions<small>Every test by oxygen and pressure</small></button></li>
-          <li><button type="button" data-tab="compare" aria-selected="false">Compare<small>Up to three studies side by side</small></button></li>
+          <li><button type="button" data-tab="compare" aria-selected="false">Compare<small>Flame lab and studies side by side</small></button></li>
           <li><button type="button" data-tab="modeling" aria-selected="false">Modeling Data<small>Conditions and results for models</small></button></li>
         </ul>
       </li>
@@ -424,7 +442,25 @@
 <!-- COMPARE -->
 <section class="view" id="view-compare">
   <div class="wrap">
-    <h2>Compare investigations</h2>
+    <h2>How a flame changes with conditions</h2>
+    <p class="lede">Move the sliders to see how gravity, oxygen, pressure and airflow change a flame, and which PSI tests exist near those conditions. Without buoyancy a candle-like flame turns into a dim blue sphere; more oxygen makes it brighter, hotter and sootier.</p>
+    <div class="flamelab">
+      <div class="flame-stage">
+        <canvas id="flameCanvas" width="560" height="380" role="img" aria-label="Illustration of a flame under the selected conditions"></canvas>
+        <div class="flame-tag" id="flameTag"></div>
+      </div>
+      <div class="flame-controls">
+        <div class="flame-presets" id="flamePresets" role="group" aria-label="Presets"></div>
+        <label class="fs">Gravity <b id="gVal"></b><input type="range" id="gSlider" min="0" max="3" step="1" value="0" aria-label="Gravity"><span class="ticks"><span>Micro-g</span><span>Moon</span><span>Mars</span><span>Earth</span></span></label>
+        <label class="fs">Oxygen <b id="oVal"></b><input type="range" id="oSlider" min="10" max="100" step="0.5" value="21" aria-label="Oxygen percent"></label>
+        <label class="fs">Pressure <b id="pVal"></b><input type="range" id="pSlider" min="0.25" max="1.5" step="0.01" value="1" aria-label="Pressure in atmospheres"></label>
+        <label class="fs">Airflow <b id="fVal"></b><input type="range" id="fSlider" min="0" max="40" step="1" value="0" aria-label="Airflow in centimeters per second"></label>
+        <div class="flame-data" id="flameData" aria-live="polite"></div>
+      </div>
+    </div>
+    <p class="legend-note">Qualitative illustration of well-established flame behavior (buoyancy, oxygen, pressure and airflow effects), not a simulation: real flames depend on the fuel, its shape and size. The test counts and investigations listed are computed from the PSI tables.</p>
+
+    <h2 style="margin-top:46px">Compare investigations</h2>
     <p class="lede">Choose up to three. Rows where the investigations agree are tinted, so shared conditions and hardware stand out.</p>
     <div class="compare-pick" id="comparePick"></div>
     <h3 class="section" style="margin-top:10px">Where their tests sit</h3>
@@ -1523,6 +1559,146 @@
     if (c) { const a = c.dataset.askCmp.split(','); [0, 1, 2].forEach(k => cmp[k] = a[k] || ''); show('compare'); renderCompare(); }
     if ((g || h || hl || c || e.target.closest('[data-open]')) && window.matchMedia('(max-width:600px)').matches) toggleAsk(false);
   });
+
+  /* ---------- Flame lab: qualitative flame illustration + nearby PSI tests ---------- */
+  (function flameLab() {
+    const cv = document.getElementById('flameCanvas'); if (!cv) return;
+    const ctx = cv.getContext('2d');
+    const G_LEVELS = [{g: 0, name: 'Microgravity'}, {g: 1 / 6, name: 'Moon (1/6 g)'}, {g: 3 / 8, name: 'Mars (3/8 g)'}, {g: 1, name: 'Earth (1 g)'}];
+    const S = {gi: 0, o2: 21, p: 1, flow: 0};
+    const PRESETS = [
+      ['Candle on Earth', {gi: 3, o2: 21, p: 1, flow: 0}],
+      ['ISS, fans off', {gi: 0, o2: 21, p: 1, flow: 0}],
+      ['ISS, ventilation on', {gi: 0, o2: 21, p: 1, flow: 20}],
+      ['Moon base', {gi: 1, o2: 34, p: 0.56, flow: 0}],
+      ['Rover in microgravity test', {gi: 0, o2: 34, p: 0.56, flow: 0}],
+      ['Near the O₂ limit (FLEX-like)', {gi: 0, o2: 13.5, p: 1, flow: 0}],
+      ['Spacesuit O₂', {gi: 0, o2: 100, p: 0.29, flow: 0}],
+    ];
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const $ = id => document.getElementById(id);
+
+    function model() {
+      const g = G_LEVELS[S.gi].g, o2 = S.o2, p = S.p, flow = S.flow;
+      // oxygen supply: diffusion only in quiescent microgravity; buoyant or forced flow improves it
+      const convect = Math.min(1, Math.sqrt(g) + flow / 25);
+      // illustrative limiting O2: higher with no convection (quiescent micro-g), lower with gentle flow,
+      // rising again when strong flow blows a weak flame out
+      const blow = flow > 25 ? (flow - 25) * 0.25 : 0;
+      // (FLEX droplets burned down to about 12-13% O2 in quiescent microgravity)
+      const limit = 12.5 - 1.5 * convect + blow;
+      const margin = o2 - limit;
+      const lit = margin > 0;
+      const intensity = Math.max(0, Math.min(1, margin / 14)) * Math.min(1.25, 0.65 + 0.35 * p);
+      // yellow soot glow: buoyant convection (the Earth candle) is the main driver; more oxygen, higher
+      // pressure and forced flow add to it; a weak, near-limit flame stays blue (the microgravity candle)
+      const sootRaw = 0.8 * Math.sqrt(g) + 0.3 * Math.min(1, flow / 25) * (1 - g)
+        + Math.max(0, (o2 - 21) / 25) * 0.8 * (0.6 + 0.4 * Math.min(1.5, p));
+      const soot = Math.max(0, Math.min(1, sootRaw * Math.min(1, 0.35 + 1.6 * Math.max(0, margin) / 14)));
+      // size: low pressure and low oxygen make diffusion flames larger and dimmer
+      const size = (0.75 + 0.45 / Math.max(0.35, p) * 0.4) * (1.15 - 0.25 * Math.min(1, (o2 - 15) / 30));
+      return {g, o2, p, flow, lit, margin, intensity, soot, size, convect};
+    }
+
+    function draw(t) {
+      const m = model(), W = cv.width, H = cv.height;
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = '#05030a'; ctx.fillRect(0, 0, W, H);
+      const ox = W * 0.42, oy = H * 0.62;              // fuel location
+      // fuel: a droplet / sample
+      ctx.fillStyle = '#2a2230'; ctx.beginPath(); ctx.arc(ox, oy, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#4a3f52'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ox - 40, oy); ctx.lineTo(ox - 9, oy); ctx.stroke();
+      if (m.flow > 0) {                                 // airflow arrows
+        ctx.strokeStyle = 'rgba(160,200,255,0.35)'; ctx.lineWidth = 1.5;
+        for (let k = 0; k < 5; k++) {
+          const y = H * 0.2 + k * H * 0.14, x0 = ((t / 1000 * m.flow * 4 + k * 47) % (W + 80)) - 80;
+          ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + 34, y); ctx.lineTo(x0 + 28, y - 4); ctx.moveTo(x0 + 34, y); ctx.lineTo(x0 + 28, y + 4); ctx.stroke();
+        }
+      }
+      if (!m.lit) {
+        ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.font = '600 16px Public Sans, Arial'; ctx.textAlign = 'center';
+        ctx.fillText(m.flow > 25 ? 'Flame blown out' : 'No flame: too little oxygen reaches it', W / 2, H * 0.3);
+        return m;
+      }
+      // flame axis: buoyancy pulls up, flow pushes downstream (+x)
+      const up = m.g, side = m.flow / 25;
+      const len = Math.hypot(up, side) || 0;
+      const ax = len ? side / len : 0, ay = len ? -up / len : 0;
+      const stretch = 1 + 2.6 * Math.min(1, Math.sqrt(m.g)) + 1.3 * Math.min(1, m.flow / 25) * (1 - Math.min(1, m.g));
+      const R = (len ? 46 : 64) * m.size * (0.75 + 0.25 * m.intensity);
+      const flick = reduced ? 0 : Math.sqrt(m.g) * (Math.sin(t / 70) * 0.06 + Math.sin(t / 37) * 0.04);
+      const N = 14;
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = N - 1; i >= 0; i--) {
+        const f = i / (N - 1);                          // 0 at base, 1 at tip
+        const reach = (stretch - 1) * R * 1.25 * (1 + flick);
+        const cx = ox + ax * reach * f + (reduced ? 0 : Math.sin(t / 90 + f * 3) * 3 * f * Math.sqrt(m.g));
+        const cy = oy + ay * reach * f - R * 0.15 * (m.g > 0 ? 1 : 0);
+        const shapeR = len ? R * Math.pow(1 - f, 0.55) + R * 0.08 : R;
+        if (!len && i > 0) continue;                    // pure sphere in quiescent microgravity
+        // color: blue (cool, diffusion-limited) to yellow-white (hot, sooty)
+        const s = Math.min(1, m.soot * (0.55 + 0.6 * f)), blue = 1 - s;
+        const r = Math.round(80 * blue + 255 * s), gC = Math.round(140 * blue + 165 * s), b = Math.round(255 * blue + 30 * s);
+        const a = len ? (0.16 + 0.4 * m.intensity) * 0.6 : Math.min(0.95, 0.38 + 0.5 * m.intensity);
+        const grd = ctx.createRadialGradient(cx, cy, shapeR * 0.15, cx, cy, shapeR);
+        grd.addColorStop(0, `rgba(${Math.min(255, r + 60)},${Math.min(255, gC + 60)},${Math.min(255, b + 40)},${a})`);
+        grd.addColorStop(0.55, `rgba(${r},${gC},${b},${a * 0.7})`);
+        grd.addColorStop(1, `rgba(${r},${gC},${b},0)`);
+        ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(cx, cy, shapeR, 0, Math.PI * 2); ctx.fill();
+      }
+      // thin blue reaction zone near the fuel (always present when lit)
+      ctx.strokeStyle = `rgba(110,170,255,${0.25 + 0.4 * m.intensity})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(ox + ax * R * 0.25, oy + ay * R * 0.25, R * 0.62, R * (len ? 0.5 : 0.62), 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalCompositeOperation = 'source-over';
+      return m;
+    }
+
+    function describe(m) {
+      const gname = G_LEVELS[S.gi].name;
+      let shape;
+      if (!m.lit) shape = m.flow > 25 ? 'Strong airflow blows the weak flame out.' : 'Without buoyancy or airflow, oxygen arrives only by slow diffusion; at this oxygen level the flame cannot sustain itself.';
+      else if (m.margin < 2) shape = 'Near its oxygen limit: the flame is small, dim and close to going out, the regime FLEX mapped to find the lowest oxygen that sustains burning.';
+      else if (m.g === 0 && m.flow === 0) shape ='No buoyancy: hot gas does not rise, so the flame is a near-spherical shell fed only by diffusion' + (m.soot < 0.35 ? ', dim and blue.' : ', brighter and sootier at this oxygen level.');
+      else if (m.g === 0) shape = 'Microgravity with forced airflow: the flame stretches downstream, the way ventilation shapes fires on a spacecraft.';
+      else if (m.g < 1) shape = 'Weak buoyancy: a shorter, wider, steadier flame than on Earth. No PSI combustion data exists at this gravity level; this view interpolates between microgravity and 1 g.';
+      else shape = 'Buoyancy pulls hot gas upward into the familiar flickering teardrop, drawing in fresh air from below.';
+      $('flameTag').textContent = `${gname} · ${S.o2}% O₂ · ${S.p.toFixed(2)} atm · ${S.flow} cm/s`;
+      // PSI tests near these O2/pressure conditions (all PSI data is microgravity)
+      const near = D.tests.filter(t => Math.abs(t[2] - S.o2) <= 2.5 && t[3] !== null && Math.abs(t[3] - S.p) <= 0.15);
+      const by = {}; near.forEach(t => by[t[0]] = (by[t[0]] || 0) + 1);
+      const list = Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 4);
+      const solid = near.filter(t => phaseGroup(t[4]) === 'Solid').length;
+      let data = near.length
+        ? `<b>${near.length}</b> PSI test points within ±2.5% O₂ and ±0.15 atm: ${list.map(([a, n]) => `<a href="#" data-open="${a}" style="border-bottom:1px solid #ffcc33">${esc(byAcc[a].name)}</a> (${n})`).join(', ')}. ${solid ? `${solid} are solid materials.` : '<span class="warn">None are solid materials.</span>'}`
+        : `<span class="warn">No PSI test was run near ${S.o2}% O₂ and ${S.p.toFixed(2)} atm.</span>`;
+      if (m.g > 0 && m.g < 1) data += ' <span class="warn">All PSI data is microgravity; there are no Moon- or Mars-gravity combustion tests yet (LUCI and FM2 are expected to add them).</span>';
+      if (m.g === 1) data += ' PSI tests are microgravity; 1 g is shown for comparison.';
+      $('flameData').innerHTML = `<p style="margin-bottom:8px">${esc(shape)}</p>${data}`;
+      $('gVal').textContent = gname; $('oVal').textContent = S.o2 + '%';
+      $('pVal').textContent = `${S.p.toFixed(2)} atm (${(S.p * 14.696).toFixed(1)} psi)`; $('fVal').textContent = S.flow + ' cm/s';
+      document.querySelectorAll('#flamePresets button').forEach(b => {
+        const v = PRESETS[+b.dataset.k][1];
+        b.setAttribute('aria-pressed', v.gi === S.gi && v.o2 === S.o2 && Math.abs(v.p - S.p) < 0.005 && v.flow === S.flow);
+      });
+    }
+
+    $('flamePresets').innerHTML = PRESETS.map(([n], k) => `<button type="button" data-k="${k}">${esc(n)}</button>`).join('');
+    $('flamePresets').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      Object.assign(S, PRESETS[+b.dataset.k][1]);
+      $('gSlider').value = S.gi; $('oSlider').value = S.o2; $('pSlider').value = S.p; $('fSlider').value = S.flow; update();
+    });
+    [['gSlider', 'gi'], ['oSlider', 'o2'], ['pSlider', 'p'], ['fSlider', 'flow']].forEach(([id, k]) =>
+      $(id).addEventListener('input', e => { S[k] = +e.target.value; update(); }));
+    let last = null;
+    function update() { last = draw(performance.now()); describe(last); }
+    function loop(t) {
+      if (document.getElementById('view-compare').classList.contains('active')) draw(t);
+      if (!reduced) requestAnimationFrame(loop);
+    }
+    update();
+    if (!reduced) requestAnimationFrame(loop);
+  })();
 
   /* ---------- Team emails: assembled at page load so simple spam scrapers do not see full addresses in the HTML ---------- */
   document.querySelectorAll('[data-user][data-domain]').forEach(el => {
