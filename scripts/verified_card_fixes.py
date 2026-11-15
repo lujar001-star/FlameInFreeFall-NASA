@@ -123,13 +123,56 @@ FIX = {
 }
 
 
+# Round 2 (after an independent AI review): takeaways now separate what PSI says a study was DESIGNED
+# to do ("Designed to ...", from objectives/approach) from what PSI REPORTS as a result (research
+# impacts written as outcomes) or what the experiment TABLE shows. No unsupported superlatives.
+ROUND2 = {
+    "PSI-25": "Designed to bridge NASA's normal-gravity screening test (NASA-STD-6001 Test 1) and actual microgravity flammability. Per the PSI approach, flame appearance, growth and spread rates were determined for realistic solids in opposed and concurrent flow up to 40 cm/s, with oxygen lowered below 21%. PSI states the results help engineers select the safest materials and improve firefighting methods.",
+    "PSI-26": "Designed to relate the flammability of practical solids in microgravity to NASA's normal-gravity screening test, and to assess nitrogen (an inert agent similar to the one used on ISS) as an extinguishant across materials, geometries and flows. PSI states the results are used in first-order models of heat release and toward a performance-based material selection process.",
+    "PSI-98": "Designed to determine how rapidly a large-scale fire grows in low gravity and to compare low-g flammability with NASA's 1-g screening test. In the table, the fabric burned 420 s in concurrent flow versus 70 s in opposed flow.",
+    "PSI-99": "In the table, flammability differed between 1-g and microgravity: thin silicone samples burned completely in 1-g tests but barely at all in microgravity, while SIBAL fabric burned its full 29 cm length in both. Designed to compare low-g flammability limits with NASA's 1-g screening test.",
+    "PSI-100": "Same objectives as Saffire-I (large-scale fire growth and low-g flammability), repeated at 30 cm/s instead of 20 cm/s in concurrent and opposed flow, giving a second flow speed for large-scale fabric fires.",
+    "PSI-69": "Designed to determine the limiting oxygen index (the lowest oxygen level that sustains burning) as a function of pressure, and how suppressants (CO2 and helium in the table) shift it. The table reports burning rate, extinction diameter and burn time for 274 tests: the inputs for choosing suppressant concentrations.",
+    "PSI-68": "Designed to provide benchmark data on pure and two-component fuel droplets. The table lists the condition matrix: 0.5 to 3 atm, 17 to 30% O2 (the approach cites 10 to 40%), nitrogen or helium, and slow imposed flow.",
+    "PSI-39": "Cool flames are low-temperature reactions. CFI was designed to examine them for n-dodecane and blends from 0.25 to 5 atm, with helium dilution and different droplet sizes; PSI states it provides critical validation for chemical kinetic mechanisms and supports the design of safer spacecraft systems.",
+    "PSI-159": "Among the PSI combustion experiment tables, CFI-G spans the widest oxygen range (12 to 85% O2), covering the 30%+ O2 expected in Moon bases and rovers. Designed to determine the conditions under which cool diffusion flames occur.",
+    "PSI-10": "Designed to obtain soot-inception and extinction limits (radiative or kinetic) of spherical flames as functions of flow rate, mixture fraction, inert dilution and pressure. The tables list 327 tests with their conditions; soot governs how much heat a flame radiates.",
+    "PSI-20": "PSI reports that flames emulating burning PMMA and nylon kept burning steadily with no air flow in elevated-oxygen atmospheres, while similar flames at 21% O2 self-extinguished quickly. Since stopping ventilation is an established step in fighting spacecraft fires, turning off fans alone may not be enough at elevated oxygen. PSI notes these results are still preliminary.",
+    "PSI-21": "Designed to provide data for rigorous testing of computational models at the extremes of fuel dilution: flame shape, lift-off height, temperatures, extinction limits and sooting of weak coflow flames.",
+    "PSI-22": "Applying an electric field pushes on the ions in a flame. The challenge brief notes that E-FIELD Flames used this effect to mimic partial gravity, making it a partial-gravity analog until lunar-gravity combustion data (LUCI, FM2) arrive.",
+    "PSI-23": "Designed to compare transient spherical flame structure and extinction limits with detailed numerical simulations, testing the transport and chemistry models that fire simulation codes rely on.",
+    "PSI-107": "Per the PSI approach, fuel flow was adjusted to identify the smoke point (onset of soot emission) of non-buoyant flames for different fuels, burner sizes and co-flow speeds. PSI states this will improve understanding of soot formation and help design safer spacecraft environments.",
+    "PSI-106": "Designed to determine liftoff velocity limits and flame-base stability of jet flames in microgravity, and to validate numerical models of flame dynamics, soot and thermal radiation. PSI states the work gives insight into flame stability to enhance fire safety.",
+    "PSI-102": "PSI states SAME was intended to provide the reduced-gravity smoke baseline against which future spacecraft detector technology is evaluated, including quantitative data on how existing detectors respond to microgravity smoke.",
+    "PSI-101": "Designed, like SAME, to relate smoke particle size to how smoke was generated and transported, with a new material, broader heating conditions and a new instrument. PSI states the results can lead to advanced fire-detector technology for future spacecraft.",
+    "PSI-47": "PSI reports the successful adaptation of the P-Trak particle counter (used by SAME) for microgravity, checked against a DustTrak, which underpins trust in SAME's smoke data. PSI notes it informs instruments for other challenging environments.",
+    "PSI-179": "PSI states the data can support the design and selection of particle detectors and air filtration suited to low gravity; background cabin aerosol is the 'normal' a smoke detector must distinguish from fire smoke.",
+}
+
+
+# Round 2 wording fixes in other fields: no superlatives or "first" claims that PSI does not state.
+ROUND2_FIELDS = {
+    "PSI-25": {"habitat_note": "The largest solid-material test set in PSI with varied oxygen (129 tests), but all at or below ~22% O2; extrapolating to 30%+ Moon-base air requires models."},
+    "PSI-26": {"summary": "ISS campaign burning practical solid fuels (SIBAL fabric, PMMA, Nomex, Ultem) in the glovebox flow duct, including wake flames and tests of an inert gaseous extinguishing agent."},
+    "PSI-98": {"habitat_note": "Realistic, vehicle-scale fire data (together with Saffire-II and -III, the large-scale fire tests in PSI); directly relevant to spacecraft and rover cabin fire scenarios."},
+    "PSI-20": {"habitat_note": "Its objectives list NASA's candidate exploration atmospheres, including 34% O2 at 8.2 psia, which is why it ranks first for Moon-base and rover atmospheres in this dashboard."},
+    "PSI-102": {"habitat_note": "Applies to any closed habitat, where early smoke detection is critical."},
+}
+
+
 def main() -> None:
     d = json.loads(P.read_text(encoding="utf-8"))
     for c in d["investigations"]:
         c.update(FIX.get(c["accession"], {}))
+        c.update(ROUND2_FIELDS.get(c["accession"], {}))
+        if c["accession"] in ROUND2:
+            c["takeaway"] = ROUND2[c["accession"]]
+            if "; reviewed again" not in c.get("verified", ""):
+                c["verified"] = c.get("verified", "") + "; reviewed again to separate stated objectives from reported results"
         assert "verified" in c, f"{c['accession']} has no verification note"
     P.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Applied fixes to {len(FIX)} cards; all {len(d['investigations'])} cards carry a verification note")
+    print(f"Applied fixes to {len(FIX)} cards and {len(ROUND2)} round-2 takeaways; "
+          f"all {len(d['investigations'])} cards carry a verification note")
 
 
 if __name__ == "__main__":

@@ -331,7 +331,7 @@
     <p class="lede">Computed directly from the PSI experiment tables. Every number on this site traces back to a PSI investigation and its DOI.</p>
     <div class="stats" id="keystats"></div>
     <div class="callout alert" id="gapCallout"></div>
-    <div class="callout"><b>Partial gravity:</b> PSI has no lunar- or Martian-gravity combustion data yet. Microgravity and 1-g results bound the behaviour in between, and ACME E-FIELD Flames is the only partial-gravity analog (electric field acting on flame ions). LUCI and FM2 are expected to fill this gap.</div>
+    <div class="callout"><b>Partial gravity:</b> PSI has no lunar- or Martian-gravity combustion data yet. Microgravity and 1-g results bound the behaviour in between, and the challenge brief notes that ACME E-FIELD Flames mimicked partial gravity with an electric field acting on flame ions. LUCI and FM2 are expected to fill this gap.</div>
 
     <h3 class="section">How this dashboard answers the challenge</h3>
     <ul class="reslist">
@@ -724,7 +724,7 @@
     });
     const h = HAB[rstate.hab];
     const grav = h.gravity.startsWith('micro') || h.gravity === 'any' ? '' :
-      ` <b>Gravity caveat:</b> all PSI data is microgravity; ${esc(h.gravity)} behaviour lies between these results and 1-g. See ACME E-FIELD Flames for the only partial-gravity analog.`;
+      ` <b>Gravity caveat:</b> all PSI data is microgravity; ${esc(h.gravity)} behaviour lies between these results and 1-g. ACME E-FIELD Flames is a partial-gravity analog (per the challenge brief).`;
     document.getElementById('habitatNote').innerHTML = `<b>${esc(rstate.hab)}:</b> ${esc(h.note)}${grav}`;
   }
   function renderWeights() {
