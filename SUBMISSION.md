@@ -137,15 +137,28 @@ None used.
 
 ---
 
-## Demo video outline (about 2 minutes)
-1. **0:00 The problem (15 s):** Moon bases at 30%+ oxygen; PSI data is hard to use. Show the Overview
-   key numbers: 0 solid-material tests at Moon-base oxygen.
-2. **0:15 Objective 1 (25 s):** Mission Relevance → click Moon base, then Pressurized rover. Point at the
-   "In short" summary and the score breakdown.
-3. **0:40 The gap (15 s):** Test Conditions → type "PMMA" in Highlight; all solid tests sit near 21%,
-   far from the red Moon-base box.
-4. **0:55 Objective 2 (20 s):** Modeling Data → FLEX extinction diameter vs oxygen plot; the matrix.
-5. **1:15 Objective 3 (20 s):** Equipment & Controls → ventilation shutdown card (BRE finding).
-6. **1:35 Trust (10 s):** open an insight card and show "Checked against"; Data & Methods scoring formula.
-7. **1:45 Ask the data (10 s):** ask "What matters most for a lunar rover?"
-8. **1:55 Close (5 s):** Earth applications and case studies; "make the next giant leap a safer one."
+## Demo video script (about 2 minutes)
+
+Check the form's video length limit first; if it is 30 seconds, use the short script below.
+Setup: open the site, start on Overview, browser full screen, zoom 110-125% so text is readable.
+Speak at a relaxed pace; about 300 words fits 2 minutes.
+
+| Time | On screen (what to click) | Narration (what to say) |
+|---|---|---|
+| 0:00-0:15 | Overview: hero, then scroll to the red key numbers | "NASA plans Moon bases and pressurized rovers with 30% oxygen or more, which makes materials far more flammable. Two decades of microgravity fire experiments sit in NASA's PSI database, but they're hard to find, compare and interpret. We built the Spacecraft Fire Safety Data Explorer to fix that." |
+| 0:15-0:30 | Point at the 1,993 / 22.2% / 0 stats and the red "Critical gap" box | "We pulled every PSI combustion experiment table into one cleaned dataset: nearly two thousand tests from 19 investigations. And the data shows a gap: none of the 264 solid-material tests, the fabrics and plastics that actually fill a cabin, were run above 22% oxygen." |
+| 0:30-0:55 | Explore the data → Mission Relevance → click Moon base, then Pressurized rover; hover the score breakdown | "Objective one: which research matters for your crew environment? Pick a habitat and every investigation is ranked with a transparent score: how close its tests are to that oxygen and pressure, its safety focus, fuel realism and amount of data. For a Moon base, the top dataset is ACME BRE, which tested 34% oxygen. The summary also states the biggest gap." |
+| 0:55-1:10 | Test Conditions → type PMMA in Highlight | "Here's that gap on the map. Every PMMA test sits near 21% oxygen, far from the red Moon-base box." |
+| 1:10-1:30 | Explore the data → Modeling Data → the FLEX plot, then scroll to the matrix | "Objective two: data for predictive models. We extracted both the test conditions and the measured results, like burn time, burning rate and extinction diameter, in consistent units, with an explorer, a variable matrix and a data dictionary. Everything downloads as one CSV." |
+| 1:30-1:45 | Fire safety → Equipment & Controls → ventilation card | "Objective three: next-generation equipment. For example, BRE's gas flames kept burning with the fans off at elevated oxygen, so on a Moon base, shutting off ventilation alone may not put out a fire." |
+| 1:45-1:55 | Investigations → open a card → point at "Checked against"; open Ask the data and click "What matters most for a lunar rover?" | "Every claim traces to its PSI record and was fact-checked. And you can simply ask the data questions, with answers computed from the dataset." |
+| 1:55-2:05 | Case Studies, then Earth Applications, end on Overview | "We also connect the data to real spacecraft fires and to fire safety on Earth, like oxygen-enriched hospital rooms. We're the Golden Go-figures from the University of Minnesota. Let's make the next giant leap a safer one." |
+
+### Short script (30 seconds)
+
+| Time | On screen | Narration |
+|---|---|---|
+| 0:00-0:08 | Overview key numbers | "Moon bases will run at 30% oxygen or more, but none of NASA's 264 microgravity fire tests on solid materials went above 22%." |
+| 0:08-0:16 | Mission Relevance → Moon base | "Our dashboard ranks every PSI combustion experiment for your habitat, ISS to lunar rover, with a transparent score." |
+| 0:16-0:24 | Modeling Data plot, then Equipment & Controls | "It extracts model-ready conditions and results, and turns the research into findings for next-generation fire safety equipment." |
+| 0:24-0:30 | Open a card → "Checked against" | "Every claim traces back to NASA's data. Let's make the next giant leap a safer one." |
