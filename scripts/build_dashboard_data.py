@@ -37,6 +37,12 @@ def main() -> None:
     details = json.loads((DATA / "psi_details.json").read_text(encoding="utf-8"))
     ground = json.loads((DATA / "insights.json").read_text(encoding="utf-8"))["ground_studies"]
 
+    # Rule: anything with numbers (ranking, tables, charts, compare) only includes investigations with
+    # experiment-table data. Studies without tables are shipped separately as context.
+    has_tests = set(tests["accession"].unique())
+    context = [c for c in cards if c["accession"] not in has_tests]
+    cards = [c for c in cards if c["accession"] in has_tests]
+
     invs = []
     for c in cards:
         acc = c["accession"]
@@ -87,7 +93,7 @@ def main() -> None:
             }
         habitats[name] = {
             "o2": list(hab["o2"]), "p_atm": [round(x, 3) for x in hab["p_atm"]],
-            "gravity": hab["gravity"], "note": hab["note"], "components": comps,
+            "gravity": hab["gravity"], "note": hab["note"], "weights": hab["weights"], "components": comps,
         }
 
     # compact test rows for the chart: [accession, name, o2, p, phase, o2_assumed(0/1), fuel, test_id, config]
@@ -119,9 +125,12 @@ def main() -> None:
 
     bundle = {
         "generated_from": "NASA PSI (psi.nasa.gov) experiment tables and investigation records",
+        "generated_on": __import__("datetime").date.today().isoformat(),
         "weights": COMPONENT_WEIGHTS,
         "investigations": invs, "habitats": habitats, "tests": rows,
         "gaps": gaps, "ground_studies": ground,
+        "context_studies": [{**c, "psi_url": PSI_PAGE.format(c["accession"]),
+                             "doi": details.get(c["accession"], {}).get("doi", "")} for c in context],
     }
     js = "window.DASH = " + json.dumps(bundle, ensure_ascii=False, separators=(",", ":")) + ";\n"
     (DATA / "dashboard.js").write_text(js, encoding="utf-8")

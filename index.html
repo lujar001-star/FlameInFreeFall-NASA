@@ -239,7 +239,7 @@
 
     <h3 class="section">Start here</h3>
     <div class="grid">
-      <article class="card"><h3>Mission relevance</h3><p>Pick ISS, Orion/Gateway, Moon base, Mars or spacesuit. Investigations are ranked by how close their tests are to that atmosphere, with the full score breakdown.</p><a class="go" href="#" data-go="relevance">Rank investigations</a></article>
+      <article class="card"><h3>Mission relevance</h3><p>Pick ISS, exploration atmosphere, Moon base, pressurized rover, Mars or spacesuit. Investigations are ranked by how close their tests are to that atmosphere, with the full score breakdown.</p><a class="go" href="#" data-go="relevance">Rank investigations</a></article>
       <article class="card"><h3>Test conditions</h3><p>Every individual test plotted by oxygen and pressure against the habitat targets, showing where the data is and where it is missing.</p><a class="go" href="#" data-go="conditions">Open the condition map</a></article>
       <article class="card"><h3>Investigations</h3><p>What each study varied, held constant and measured, its fire-safety takeaway, modeling value and limitations.</p><a class="go" href="#" data-go="investigations">Browse investigations</a></article>
       <article class="card"><h3>Compare</h3><p>Put up to three investigations side by side to see which conditions and hardware they share.</p><a class="go" href="#" data-go="compare">Compare</a></article>
@@ -301,11 +301,7 @@
 
     <h3 class="section">Oxygen at a glance</h3>
     <div class="bars" id="o2bars"></div>
-    <div class="grid" style="margin-top:30px">
-      <article class="card"><h3>Spacesuits</h3><p>100% oxygen at only 4.3 psi (Earth sea level is 14.7 psi). Astronauts pre-breathe 100% oxygen to expel nitrogen and avoid decompression sickness.</p></article>
-      <article class="card"><h3>Moon base and rovers</h3><p>An intermediate atmosphere is expected, likely 30% oxygen or more at 10.2 psi or less, to shorten pre-breathing. That is over 40% more oxygen than Earth air, making materials much more flammable.</p></article>
-      <article class="card"><h3>Highest-oxygen tests</h3><p>ACME CFI-G and Flame Design flowed up to 85% oxygen from a spherical burner into a nitrogen and fuel chamber, creating an inside-out (inverse) flame.</p></article>
-    </div>
+    <div class="callout"><b>Why these targets:</b> spacesuits use 100% O₂ at 4.3 psi, so astronauts pre-breathe oxygen to avoid decompression sickness. To shorten pre-breathe, Moon bases and rovers are expected to use an intermediate atmosphere of about 30% O₂ or more at 10.2 psi or less: over 40% more oxygen than Earth air, making materials much more flammable. The 85% points are ACME inverse flames, where oxygen flows out of a spherical burner into a nitrogen-and-fuel chamber.</div>
   </div>
 </section>
 
@@ -334,8 +330,8 @@
     <h2>Fire safety areas</h2>
     <p class="lede">NASA's spacecraft fire safety work is organized around prevention, detection and suppression. Listed investigations are rated 2 or 3 (out of 3) for that pillar.</p>
     <div class="grid" id="pillarGrid"></div>
-    <h3 class="section">Ground studies that reuse flight data</h3>
-    <p class="lede">PSI-funded modeling studies built on these flight datasets: evidence of which data already supports predictive models.</p>
+    <h3 class="section">Related studies without experiment tables</h3>
+    <p class="lede">These PSI studies have no test table, so they are not ranked or charted. The ground studies are PSI-funded models built on the flight data above, evidence of which datasets already support predictive modeling.</p>
     <div class="grid" id="groundGrid"></div>
     <div class="callout"><b>Earth applications:</b> SAME results feed smoke-detector design, FLEX informs gaseous suppressant effectiveness, and the high-oxygen ACME data applies to oxygen-enriched settings such as hospitals. <a class="go" href="#" data-go="earth" style="margin:0">See Earth Applications</a>. Rocket and propellant fires are outside the scope of PSI data.</div>
   </div>
@@ -353,8 +349,8 @@
     <ul class="reslist">
       <li><b><span class="pill evidence-psi">PSI data</span></b><span>PSI experiment data directly measures the physics behind this application (listed investigations).</span></li>
       <li><b><span class="pill evidence-related">Related</span></b><span>PSI data informs the models or understanding, but the application also depends on other testing.</span></li>
-      <li><b><span class="pill evidence-spinoff">NASA spinoff</span></b><span>A real NASA technology transfer that is <em>not</em> based on PSI combustion data. Listed for context, as named in the challenge brief.</span></li>
     </ul>
+    <div class="callout"><b>Not covered by PSI data:</b> the challenge brief also cites NASA spinoffs such as fine-water-mist extinguishers and firefighter protective clothing and air tanks. These came from other NASA programs; PSI contains no test data on them, so we list only applications the PSI combustion data actually supports.</div>
   </div>
 </section>
 
@@ -375,7 +371,7 @@
     <div class="formula">score = 0.40·conditions + 0.25·pillar_focus + 0.20·fuel_realism + 0.15·data_amount<br><br>
       closeness(test) = exp(−[(ΔO<sub>2</sub>/8 pts)² + (ΔP/0.25 atm)²])   (× 0.7 if the value is assumed)<br>
       conditions = ½·best closeness + ½·min(1, 3 × share of tests with closeness &gt; 0.5)<br>
-      pillar_focus = weighted mean of prevention/detection/suppression ratings (0–3)<br>
+      pillar_focus = weighted mean of prevention/detection/suppression ratings (0–3); default weights depend on the environment and are adjustable<br>
       fuel_realism: solid 1.0 · solid emulator 0.9 · smoke source 0.8 · liquid 0.6 · gas 0.5 · aerosol 0.3–0.4<br>
       data_amount = log(tests+1) / log(300), capped at 1</div>
     <ul class="reslist" style="margin-top:16px">
@@ -414,7 +410,7 @@
     <div class="team">
       <article class="card member">
         <div class="avatar" aria-hidden="true">IF</div>
-        <h3>Isaac Fouts and Fabian Lujardo</h3>
+        <h3>Isaac Fouts</h3>
         <p class="role">Web page developer</p>
         <a class="go" href="https://www.linkedin.com/in/isaacfouts/" target="_blank" rel="noopener">LinkedIn</a>
       </article>
@@ -446,7 +442,7 @@
   </div>
   <hr class="f-rule">
   <div class="f-meta">
-    <span>Page Last Updated: <b id="updated"></b></span>
+    <span>Data Last Updated: <b id="updated"></b></span>
     <span>Page Editors: <b>Isaac Fouts</b>, <b>Fabian Lujardo</b></span>
     <span>Data source: <b>NASA PSI</b></span>
   </div>
@@ -472,7 +468,6 @@
 
   /* ---------- Tabs ---------- */
   const tabs = document.querySelectorAll('[data-tab]');
-  let chartDrawn = false;
   function show(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
     tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab === id));
@@ -501,18 +496,21 @@
     [G.solid_tests_at_moon_o2, 'solid-material tests at Moon-base O₂ (≥30%)', 'bad'],
     [G.partial_gravity_tests, 'partial-gravity (Moon/Mars) tests', 'bad'],
   ].map(([v, k, c]) => `<div class="stat ${c || ''}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
-  document.getElementById('gapCallout').innerHTML = `<b>Critical gap for the Moon base:</b> the ${G.solid_tests} solid-material tests in PSI (fabrics, plastics) were all run at or below ${G.solid_max_o2_measured}% O₂. Planned lunar habitats and rovers will run at 30% or more. Only gas-flame (ACME) and liquid-droplet (FLEX family) tests reach that range (${G.tests_at_moon_o2} tests), so solid-material flammability at Moon-base conditions currently relies on extrapolation and models.`;
+  document.getElementById('gapCallout').innerHTML = `<b>Critical gap for the Moon base:</b> the ${G.solid_tests} solid-material tests in PSI (fabrics, plastics) were all run at or below ${G.solid_max_o2_measured}% O₂. Planned lunar habitats and rovers are expected to run at 30% or more. Only gas-flame (ACME) and liquid-droplet (FLEX family) tests reach that range (${G.tests_at_moon_o2} tests), so solid-material flammability at Moon-base conditions currently relies on extrapolation and models.`;
 
   /* ---------- Mission relevance ---------- */
   const HAB = D.habitats;
   const habNames = Object.keys(HAB);
-  const rstate = { hab: "Moon base / pressurized rover", w: {prevention: 2, detection: 1, suppression: 1} };
+  const rstate = { hab: "Moon base", w: {...HAB["Moon base"].weights} };
   const psi = atm => (atm * 14.696).toFixed(1);
   function habLabel(n) { const h = HAB[n]; return `${h.o2[0] === h.o2[1] ? h.o2[0] : h.o2[0] + '–' + h.o2[1]}% O₂ · ${h.p_atm[0] === h.p_atm[1] ? psi(h.p_atm[0]) : psi(h.p_atm[0]) + '–' + psi(h.p_atm[1])} psi`; }
   function renderHabitats() {
     document.getElementById('habitatPicker').innerHTML = habNames.map(n =>
       `<button class="habitat" type="button" data-hab="${esc(n)}" aria-pressed="${n === rstate.hab}"><b>${esc(n)}</b><small>${habLabel(n)} · ${esc(HAB[n].gravity)}</small></button>`).join('');
-    document.querySelectorAll('[data-hab]').forEach(b => b.onclick = () => { rstate.hab = b.dataset.hab; renderHabitats(); renderRank(); });
+    document.querySelectorAll('[data-hab]').forEach(b => b.onclick = () => {
+      rstate.hab = b.dataset.hab; rstate.w = {...HAB[rstate.hab].weights};
+      renderHabitats(); renderWeights(); renderRank();
+    });
     const h = HAB[rstate.hab];
     const grav = h.gravity.startsWith('micro') || h.gravity === 'any' ? '' :
       ` <b>Gravity caveat:</b> all PSI data is microgravity; ${esc(h.gravity)} behaviour lies between these results and 1-g. See ACME E-FIELD Flames for the only partial-gravity analog.`;
@@ -520,11 +518,12 @@
   }
   function renderWeights() {
     const w = document.getElementById('weights');
-    w.innerHTML = '<strong>Pillar weights</strong>' + PILLARS.map(p =>
+    w.innerHTML = '<strong title="Defaults are set per environment; adjust to your decision">Pillar weights</strong>' + PILLARS.map(p =>
       `<label>${cap(p)} <input type="range" min="0" max="3" step="1" value="${rstate.w[p]}" data-w="${p}" aria-label="${cap(p)} weight"> <b id="wv-${p}">${rstate.w[p]}</b></label>`).join('');
     w.querySelectorAll('[data-w]').forEach(r => r.oninput = () => {
       rstate.w[r.dataset.w] = +r.value; document.getElementById('wv-' + r.dataset.w).textContent = r.value; renderRank();
     });
+    w.insertAdjacentHTML('beforeend', '<span class="muted" style="font-size:13px">Defaults reflect what dominates fire risk in this environment.</span>');
   }
   function scoreAll() {
     const comps = HAB[rstate.hab].components, W = D.weights;
@@ -630,7 +629,7 @@
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-csv]'); if (!a) return;
     e.preventDefault(); e.stopPropagation();
-    const head = ['accession', 'investigation', 'o2_pct', 'pressure_atm', 'fuel_phase', 'assumed', 'fuel', 'test_id', 'config'];
+    const head = ['accession', 'investigation', 'o2_pct', 'pressure_atm', 'fuel_phase', 'o2_assumed', 'fuel', 'test_id', 'config'];
     const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const lines = [head.join(',')].concat(D.tests.filter(t => t[0] === a.dataset.csv).map(t => t.map(q).join(',')));
     const blob = new Blob([lines.join('\n')], {type: 'text/csv'});
@@ -664,7 +663,7 @@
     // [label, x0, x1, y0, y1, color, label x, label y]
     const boxes = [
       ['ISS / cabin', 20.5, 21.5, 0.97, 1.03, '#f3e6c8', 21, 1.16],
-      ['Orion / Gateway', 26, 27, 0.66, 0.73, '#9fd3ff', 26.5, 0.30],
+      ['Exploration atm.', 26, 27, 0.66, 0.73, '#9fd3ff', 26.5, 0.30],
       ['Moon base / rover · Mars', 30, 34, 0.558, 0.694, '#ff5a6e', 41, 0.18],
       ['Spacesuit', 98, 100, 0.27, 0.32, '#ff8a98', 96, 0.48],
     ];
@@ -680,7 +679,6 @@
     };
     Plotly.react(el, traces, layout, {responsive: true, displaylogo: false});
     document.getElementById('chartNote').textContent = `${pts.length} points shown. Pressure axis in atm (1 atm = 14.7 psi). Assumed points are jittered slightly so overlapping tests stay visible.`;
-    chartDrawn = true;
   }
   ['hideInverse', 'hideAssumed'].forEach(id => document.getElementById(id).addEventListener('change', drawChart));
 
@@ -738,7 +736,6 @@
     "MSG flow duct": "Fan-driven flow duct built for SPICE, used in the Microgravity Science Glovebox with solid and gaseous fuels.",
     "Saffire (Cygnus)": "Large-scale fires inside uncrewed Cygnus cargo vehicles after leaving the ISS.",
     "SAME (MSG)": "Smoke and aerosol instruments; the P-Trak used for smoke in SAME was validated with dust in DAFT.",
-    "Passive samplers": "Passive aerosol samplers returned to Earth for analysis.",
   };
   const fams = {};
   INV.forEach(i => (fams[i.family] = fams[i.family] || []).push(i));
@@ -758,8 +755,11 @@
       <ul>${list.map(i => `<li><a href="#" data-open="${i.accession}">${esc(i.name)}</a>${i.pillars[p] === 3 ? ' ★' : ''}</li>`).join('')}</ul>
       <a class="go" href="#" data-filter="${cap(p)}">Filter investigations</a></article>`;
   }).join('');
-  document.getElementById('groundGrid').innerHTML = D.ground_studies.map(g => `
-    <article class="card"><h3>${esc(g.accession)}</h3><p>${esc(g.summary)}</p>
+  document.getElementById('groundGrid').innerHTML = (D.context_studies || []).map(c => `
+    <article class="card"><span class="pill">Flight · no test table</span><h3>${esc(c.name)} (${esc(c.accession)})</h3><p>${esc(c.summary)}</p>
+    <p style="margin-top:8px">${esc(c.takeaway)}</p>
+    <a class="go" href="${esc(c.psi_url)}" target="_blank" rel="noopener">PSI record</a></article>`).join('') + D.ground_studies.map(g => `
+    <article class="card"><span class="pill">Ground modeling study</span><h3>${esc(g.accession)}</h3><p>${esc(g.summary)}</p>
     <p style="margin-top:8px">Uses: ${g.uses.filter(a => byAcc[a]).map(a => `<a href="#" data-open="${a}" style="border-bottom:1px solid #ffcc33">${esc(byAcc[a].name)}</a>`).join(', ')}</p>
     <a class="go" href="https://psi.nasa.gov/physci/repo/data/investigations/${esc(g.accession)}" target="_blank" rel="noopener">PSI record</a></article>`).join('');
 
@@ -800,16 +800,8 @@
      data: "FLEX discovered long-lived droplet cool flames in microgravity; CFI and ACME CFI-G mapped when they occur vs pressure, oxygen and fuel.",
      use: "Low-temperature chemistry data for auto-ignition models used in process safety and advanced engines.",
      inv: ["PSI-69", "PSI-39", "PSI-159"]},
-    {t: "Fine-water-mist extinguishers", ev: "spinoff", who: "Homes, ships, aircraft",
-     problem: "Water mist puts out fires with far less water and damage than sprinklers.",
-     data: "A NASA spinoff named in the challenge brief. PSI contains no water-mist test data, so it is listed here for context only.",
-     use: "Commercial mist systems derived from ISS extinguisher development.", inv: []},
-    {t: "Firefighter protective gear and air tanks", ev: "spinoff", who: "Firefighters",
-     problem: "Lighter breathing-air tanks and heat-resistant clothing reduce firefighter fatigue and injury.",
-     data: "NASA spinoffs from spacesuit and materials programs, not from PSI combustion data. Listed for context.",
-     use: "Lightweight composite air tanks and flame-resistant fabrics in firefighter equipment.", inv: []},
   ];
-  const EV = {psi: ['PSI data', 'evidence-psi'], related: ['Related', 'evidence-related'], spinoff: ['NASA spinoff', 'evidence-spinoff']};
+  const EV = {psi: ['PSI data', 'evidence-psi'], related: ['Related', 'evidence-related']};
   let evFilter = null;
   function renderEarth() {
     const f = document.getElementById('earthFilter'); f.innerHTML = '';
@@ -836,7 +828,8 @@
   document.getElementById('citeList').innerHTML = INV.filter(i => i.doi).map(i =>
     `<li><b>${esc(i.name)} (${esc(i.accession)})</b><span>${esc(i.title)}. NASA Physical Sciences Informatics. <a href="https://doi.org/${esc(i.doi)}" target="_blank" rel="noopener">doi:${esc(i.doi)}</a></span></li>`).join('');
 
-  document.getElementById('updated').textContent = new Date().toLocaleDateString('en-US', {month: 'short', day: '2-digit', year: 'numeric'});
+  document.getElementById('updated').textContent = D.generated_on
+    ? new Date(D.generated_on + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: '2-digit', year: 'numeric'}) : '–';
   render();
   const fromHash = () => { const id = location.hash.slice(1); if (document.getElementById('view-' + id)) show(id); };
   window.addEventListener('hashchange', fromHash);

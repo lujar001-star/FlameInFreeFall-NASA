@@ -22,26 +22,48 @@ DATA = ROOT / "data"
 PSI_TO_ATM = 1 / 14.696
 
 # Target crew atmospheres. Ranges where NASA gives a band rather than a single value.
+MOON_O2 = (30.0, 34.0)
+MOON_P = (8.2 * PSI_TO_ATM, 10.2 * PSI_TO_ATM)
+
+# Target crew atmospheres. Ranges where NASA gives a band rather than a single value.
+# `weights` are the default pillar weights (prevention, detection, suppression) for that environment;
+# users can change them on the site. They encode what dominates fire risk there, and say why.
 HABITATS = {
     "ISS / spacecraft cabin": {
         "o2": (20.5, 21.5), "p_atm": (0.97, 1.03), "gravity": "microgravity",
-        "note": "Sea-level-like air: 21% O2 at 14.7 psi.",
+        "weights": {"prevention": 1, "detection": 1, "suppression": 1},
+        "note": "Sea-level-like air: 21% O2 at 14.7 psi. Most existing PSI data was taken in these conditions.",
     },
-    "Exploration cabin (Orion/Gateway)": {
+    "Exploration atmosphere": {
         "o2": (26.5, 26.5), "p_atm": (10.2 * PSI_TO_ATM, 10.2 * PSI_TO_ATM), "gravity": "microgravity",
-        "note": "Candidate exploration atmosphere: 26.5% O2 at 10.2 psi.",
+        "weights": {"prevention": 2, "detection": 1, "suppression": 1},
+        "note": "NASA's candidate exploration atmosphere of 26.5% O2 at 10.2 psi (as listed in the ACME BRE "
+                "objectives), considered for vehicles that support frequent spacewalks.",
     },
-    "Moon base / pressurized rover": {
-        "o2": (30.0, 34.0), "p_atm": (8.2 * PSI_TO_ATM, 10.2 * PSI_TO_ATM), "gravity": "lunar (1/6 g)",
-        "note": "30 to 34% O2 at 8.2 to 10.2 psi to shorten spacesuit pre-breathe.",
+    "Moon base": {
+        "o2": MOON_O2, "p_atm": MOON_P, "gravity": "lunar (1/6 g)",
+        "weights": {"prevention": 2, "detection": 1, "suppression": 1},
+        "note": "30 to 34% O2 at 8.2 to 10.2 psi to shorten spacesuit pre-breathe. Oxygen-enriched air makes "
+                "material selection (prevention) the first line of defence.",
+    },
+    "Pressurized rover": {
+        "o2": MOON_O2, "p_atm": MOON_P, "gravity": "lunar (1/6 g)",
+        "weights": {"prevention": 2, "detection": 2, "suppression": 2},
+        "note": "Same oxygen-enriched air as the Moon base, but a small cabin far from the base: smoke and heat "
+                "build up within minutes and there is little room to retreat, so early detection and fast "
+                "suppression weigh as much as prevention. The atmosphere match is identical to the Moon base; "
+                "the gap specific to rovers is that the only vehicle-scale fire data (Saffire) was taken at 21% O2.",
     },
     "Mars habitat": {
-        "o2": (30.0, 34.0), "p_atm": (8.2 * PSI_TO_ATM, 10.2 * PSI_TO_ATM), "gravity": "Martian (3/8 g)",
+        "o2": MOON_O2, "p_atm": MOON_P, "gravity": "Martian (3/8 g)",
+        "weights": {"prevention": 2, "detection": 1, "suppression": 1},
         "note": "Assumed similar to the Moon-base atmosphere.",
     },
     "Spacesuit": {
         "o2": (100.0, 100.0), "p_atm": (4.3 * PSI_TO_ATM, 4.3 * PSI_TO_ATM), "gravity": "any",
-        "note": "100% O2 at 4.3 psi.",
+        "weights": {"prevention": 3, "detection": 0, "suppression": 0},
+        "note": "100% O2 at 4.3 psi. There is no practical way to detect or fight a fire inside a suit, so only "
+                "prevention (ignition and material control) applies.",
     },
 }
 
@@ -99,7 +121,7 @@ def test_closeness(tests: pd.DataFrame, habitat: dict) -> pd.Series:
 def rank(tests: pd.DataFrame, cards: list[dict], habitat: dict,
          pillar_weights: dict | None = None) -> pd.DataFrame:
     """Return one row per investigation with overall score and its components (all 0-100)."""
-    pillar_weights = pillar_weights or {"prevention": 1, "detection": 1, "suppression": 1}
+    pillar_weights = pillar_weights or habitat.get("weights") or {"prevention": 1, "detection": 1, "suppression": 1}
     wsum = sum(pillar_weights.values()) or 1
     t = tests.copy()
     t["closeness"] = test_closeness(t, habitat)
@@ -108,6 +130,8 @@ def rank(tests: pd.DataFrame, cards: list[dict], habitat: dict,
     for card in cards:
         sub = t[t["accession"] == card["accession"]]
         n = len(sub)
+        if n == 0:
+            continue  # context-only study (no experiment table): not ranked
         known = sub["closeness"].dropna()
         if len(known):
             best = known.max()
