@@ -283,7 +283,8 @@
     <h2>Mission relevance ranking</h2>
     <p class="lede">Choose the crew environment you are designing for. Each investigation gets a transparent 0 to 100 score; weight the fire-safety pillars that matter for your decision.</p>
     <div class="habitats" id="habitatPicker" role="group" aria-label="Crew environment"></div>
-    <div class="callout" id="habitatNote" style="margin:0 0 18px"></div>
+    <div class="callout" id="habitatNote" style="margin:0 0 12px"></div>
+    <div class="callout alert" id="habitatSummary" style="margin:0 0 18px"></div>
     <div class="weights" id="weights">
       <strong>Pillar weights</strong>
     </div>
@@ -604,9 +605,29 @@
       return {i, c, parts, score: 100 * score, why: why.join('; ')};
     }).sort((a, b) => b.score - a.score);
   }
+  function renderSummary(ranked) {
+    const comps = HAB[rstate.hab].components;
+    const top = ranked.slice(0, 3).map(r => r.i.name);
+    const near = INV.filter(i => comps[i.accession].matching > 0);
+    const nearTests = near.reduce((a, i) => a + comps[i.accession].matching, 0);
+    const solids = INV.filter(i => i.fuel_phase === 'solid');
+    const solidNear = solids.reduce((a, i) => a + comps[i.accession].matching, 0);
+    let gap;
+    if (!nearTests) gap = `No PSI test comes close to this atmosphere, so every ranking here rests on pillar focus and fuel type, not on matching conditions. This is a data gap, not a modeling input.`;
+    else if (!solidNear) gap = `None of the ${G.solid_tests} solid-material tests (fabrics, plastics: the actual cabin fire load) are near this atmosphere; the matching data comes from gas flames and fuel droplets.`;
+    else if (HAB[rstate.hab].gravity.startsWith('micro')) {
+      const saffire = INV.filter(i => i.family.startsWith('Saffire')).reduce((a, i) => a + i.stats.tests, 0);
+      gap = `${solidNear} solid-material tests are near this atmosphere, but realistic vehicle-scale fire data is limited to ${saffire} Saffire samples, and several glovebox tables do not record O₂ or pressure (cabin air assumed).`;
+    } else gap = `${solidNear} solid-material tests are near this atmosphere, but all PSI data is from microgravity; ${esc(HAB[rstate.hab].gravity)} behaviour must be bounded with 1-g data.`;
+    document.getElementById('habitatSummary').innerHTML =
+      `<b>In short (${esc(rstate.hab)}):</b> the most relevant datasets are <b>${top.map(esc).join('</b>, <b>')}</b>. ` +
+      `${nearTests} tests from ${near.length} investigation${near.length === 1 ? '' : 's'} are close to its atmosphere. <b>Biggest gap:</b> ${gap}`;
+  }
   function renderRank() {
     const lab = {conditions: 'Conditions', safety_focus: 'Pillars', fuel: 'Fuel', data: 'Data'};
-    document.getElementById('rankRows').innerHTML = scoreAll().map((r, k) => `
+    const ranked = scoreAll();
+    renderSummary(ranked);
+    document.getElementById('rankRows').innerHTML = ranked.map((r, k) => `
       <tr class="clickable" data-open="${r.i.accession}">
         <td class="num">${k + 1}</td>
         <td class="name">${esc(r.i.name)}<br><span class="muted" style="font-weight:400;font-size:13px">${esc(r.i.fuel_phase)}</span></td>
