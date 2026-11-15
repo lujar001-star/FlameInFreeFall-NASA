@@ -365,7 +365,7 @@
         "Photomultiplier tubes",
         "Thermocouples (burner temperature)"
       ],
-      "takeaway": "Among the PSI combustion experiment tables, CFI-G spans the widest oxygen range (12 to 85% O2), covering the 30%+ O2 expected in Moon bases and rovers. Designed to determine the conditions under which cool diffusion flames occur.",
+      "takeaway": "In the table, O2 runs from 12 to 85%: the widest span of the 19 PSI combustion experiment tables (computed from all of them; ACME Flame Design also reaches 85%, from 19.8%), covering the 30%+ O2 expected in Moon bases and rovers. Designed to determine the conditions under which cool diffusion flames occur.",
       "modeling_value": "333 tests with adiabatic flame temperature, stoichiometric mixture fraction and outcome; strong validation set for high-O2 kinetics.",
       "habitat_note": "Essential for Moon-base and rover atmospheres; note inverse-flame O2 is in the oxidizer stream, not the room air.",
       "earth_application": "Engine efficiency through low-temperature combustion.",
