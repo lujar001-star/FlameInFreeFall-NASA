@@ -160,11 +160,31 @@ ROUND2_FIELDS = {
 }
 
 
+# Round 3 (full-site self-audit): modeling_value must say what is in the experiment TABLE (and thus in
+# tests.csv) versus what lives only in PSI's raw data files (images, sensor time series).
+ROUND3_FIELDS = {
+    "PSI-25": {"modeling_value": "Table: initial O2 and initial/final O2, CO2 and CO for 129 burns of realistic solids at reduced oxygen. Flame spread rates and extinction limits come from the imagery in the PSI data files, not the table."},
+    "PSI-26": {"modeling_value": "Table: material and sample for 122 burns. Flame spread, quenching and radiometer data are in the PSI data files; baseline for BASS-II and Saffire."},
+    "PSI-98": {"modeling_value": "Table: sample, flow, O2 and burn time. Fire growth, O2/CO2/pressure response and radiometer data for validating vehicle-level fire models are in the PSI data files."},
+    "PSI-100": {"modeling_value": "Table: sample, flow and direction. Large-scale fire growth and atmosphere data at a second flow speed are in the PSI data files."},
+    "PSI-99": {"modeling_value": "Table: microgravity and 1-g burn length and spread rate for the same materials (rare paired data); sensor time series are in the PSI data files."},
+    "PSI-10": {"modeling_value": "Table: 327 tests with O2, pressure, flows and calculated flame temperature and mixture fraction. Soot-inception and extinction observations are in the PSI data files."},
+    "PSI-107": {"modeling_value": "Table: 469 flames with fuel, nozzle and co-flow rates. Smoke points and flame lengths are identified from the imagery in the PSI data files; input for soot models."},
+    "PSI-106": {"modeling_value": "Table: test dates and fuels. Liftoff limits and flame structure are in the 4,000+ images in the PSI data files."},
+    "PSI-23": {"modeling_value": "Table: daily fuel, atmosphere and flames ignited. Transient flame structure and extinction data are in the PSI data files."},
+    "PSI-21": {"modeling_value": "Table: daily fuel, dilution range and flames ignited. Flame shape, lift-off, temperature and soot measurements for CFD validation are in the PSI data files."},
+    "PSI-102": {"modeling_value": "Table: material, air flow, heating and aging settings. Smoke particle sizes (electron microscopy) and detector responses are in the PSI data files."},
+    "PSI-101": {"modeling_value": "Table: material, inlet velocity, heating duration, aging times and the Rt/R0 ratio as reported. Particle-size results are in the PSI data files and final report."},
+    "PSI-20": {"summary": "Used a gas-fed porous burner to emulate burning solids in still (quiescent) air. Its objectives list NASA's candidate exploration atmospheres (14.7 psia/21%, 10.2 psia/26.5%, 8.2 psia/34% O2); the table shows flames at 21, 25, 26.5, 34 and 40% O2."},
+}
+
+
 def main() -> None:
     d = json.loads(P.read_text(encoding="utf-8"))
     for c in d["investigations"]:
         c.update(FIX.get(c["accession"], {}))
         c.update(ROUND2_FIELDS.get(c["accession"], {}))
+        c.update(ROUND3_FIELDS.get(c["accession"], {}))
         if c["accession"] in ROUND2:
             c["takeaway"] = ROUND2[c["accession"]]
             if "; reviewed again" not in c.get("verified", ""):

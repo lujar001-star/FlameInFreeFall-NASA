@@ -30,7 +30,7 @@ MOON_P = (8.2 * PSI_TO_ATM, 10.2 * PSI_TO_ATM)
 # users can change them on the site. They encode what dominates fire risk there, and say why.
 HABITATS = {
     "ISS / spacecraft cabin": {
-        "o2": (20.5, 21.5), "p_atm": (0.97, 1.03), "gravity": "microgravity",
+        "o2": (20.5, 21.5), "p_atm": (0.97, 1.03), "gravity": "microgravity", "label": "21% O₂ · 14.7 psi",
         "weights": {"prevention": 1, "detection": 1, "suppression": 1},
         "note": "Sea-level-like air: 21% O2 at 14.7 psi. Most existing PSI data was taken in these conditions.",
     },
@@ -78,7 +78,7 @@ FUEL_RELEVANCE = {  # how directly a fuel type represents cabin fire hazards
 }
 
 COMPONENT_WEIGHTS = {"conditions": 0.40, "safety_focus": 0.25, "fuel": 0.20, "data": 0.15}
-O2_SCALE = 8.0     # percentage points at which closeness falls off
+O2_SCALE = 5.0     # percentage points at which closeness falls off
 P_SCALE = 0.25     # atm at which closeness falls off
 ASSUMED_WEIGHT = 0.7  # assumed (not measured) conditions count for less
 
@@ -101,17 +101,25 @@ def _gap(lo: float, hi: float, tlo: float, thi: float) -> float:
 def test_closeness(tests: pd.DataFrame, habitat: dict) -> pd.Series:
     """0-1 closeness of each test's O2/pressure to the habitat target. NaN if O2 unknown."""
     (tlo, thi), (plo, phi) = habitat["o2"], habitat["p_atm"]
+    def levels(text):
+        return [float(x) for x in str(text).split(";") if x.strip() not in ("", "nan")]
+
     out = []
     for r in tests.itertuples():
         if pd.isna(r.o2_min_pct):
             out.append(math.nan)
             continue
-        d_o2 = _gap(r.o2_min_pct, r.o2_max_pct, tlo, thi) / O2_SCALE
+        # Rows that list discrete levels (ACME BRE days, FLEX-2 matrix) are scored on the levels actually
+        # tested, not on the min-max range (a day testing "21; 26.5; 40" did not test 30-34%).
+        o2s = levels(getattr(r, "o2_levels_pct", "")) or None
+        ps = levels(getattr(r, "p_levels_atm", "")) or None
+        o2_gaps = [_gap(v, v, tlo, thi) for v in o2s] if o2s else [_gap(r.o2_min_pct, r.o2_max_pct, tlo, thi)]
         if pd.isna(r.pressure_min_atm):
-            d_p = 0.5  # unknown pressure: mild penalty
+            p_gaps = [None]  # unknown pressure: mild penalty
         else:
-            d_p = _gap(r.pressure_min_atm, r.pressure_max_atm, plo, phi) / P_SCALE
-        c = math.exp(-(d_o2 ** 2 + d_p ** 2))
+            p_gaps = [_gap(v, v, plo, phi) for v in ps] if ps else [_gap(r.pressure_min_atm, r.pressure_max_atm, plo, phi)]
+        c = max(math.exp(-((go / O2_SCALE) ** 2 + (0.5 if gp is None else gp / P_SCALE) ** 2))
+                for go in o2_gaps for gp in p_gaps)
         if isinstance(r.assumed, str) and r.assumed:
             c *= ASSUMED_WEIGHT
         out.append(c)

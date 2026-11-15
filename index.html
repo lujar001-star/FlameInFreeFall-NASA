@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Spacecraft Fire Safety Data Explorer</title>
+<meta name="description" content="Every NASA PSI microgravity combustion experiment table in one dataset: rank investigations for the ISS, Moon base, lunar rover, Mars or spacesuit atmospheres, get model-ready data, and see what the research means for next-generation fire safety equipment.">
+<meta property="og:title" content="Spacecraft Fire Safety Data Explorer">
+<meta property="og:description" content="1,993 microgravity combustion tests from NASA PSI, ranked for Moon-base and rover atmospheres. NASA Space Apps 2026, Flame in Free Fall.">
+<meta property="og:image" content="assets/logo.png">
 <link rel="icon" href="assets/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -365,7 +369,7 @@
     </div>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>#</th><th>Investigation</th><th>Relevance score</th><th>Score breakdown</th><th>Tests near target</th><th>Why</th></tr></thead>
+        <thead><tr><th>#</th><th>Investigation</th><th>Relevance score</th><th>Score breakdown</th><th title="Tests whose oxygen and pressure are close to this environment (closeness above 0.5)">Tests near target<br><span class="muted" style="font-weight:400">O₂ and pressure</span></th><th>Why</th></tr></thead>
         <tbody id="rankRows"></tbody>
       </table>
     </div>
@@ -397,7 +401,7 @@
 <section class="view" id="view-conditions">
   <div class="wrap">
     <h2>Test conditions: oxygen and pressure</h2>
-    <p class="lede">Each dot is one test (or one condition row for summary tables). Shaded boxes are crew-environment targets. Hollow dots use assumed cabin-air values. Hover for details; click legend items to hide fuel types.</p>
+    <p class="lede">Each dot is one test; for rows that list several tested levels (ACME BRE days, the FLEX-2 matrix) each level gets its own dot. Shaded boxes are crew-environment targets. Hollow dots use assumed cabin-air values. Hover for details; click legend items to hide fuel types.</p>
     <div class="controls">
       <label style="color:var(--text)">Highlight <input type="search" id="chartSearch" placeholder="e.g. FLEX, PMMA, propane, heptane" aria-label="Highlight tests on the chart" style="background:var(--black);border:1px solid var(--line);padding:7px 10px;border-radius:4px;width:260px"></label>
       <span class="muted" id="chartSearchCount" style="font-size:14px"></span>
@@ -521,12 +525,13 @@
       <li><b>Normalized test table</b><span>All tests with their conditions and measured results in common units (O<sub>2</sub> %, atm, cm/s, mm, s, K), with an <code>assumed</code> column. Column meanings are in the <a href="#" data-go="modeling" style="border:0;text-decoration:underline">data dictionary</a>. <a href="data/tests.csv" download>tests.csv</a></span></li>
       <li><b>Insight cards</b><span>Curated objectives, variables, measurements, takeaways and limitations per investigation. <a href="data/insights.json" download>insights.json</a></span></li>
       <li><b>Original experiment tables</b><span>Unmodified CSVs from PSI, one per investigation. <a href="https://github.com/lujar001-star/FlameInFreeFall-NASA/tree/main/data/tables" target="_blank" rel="noopener">data/tables on GitHub</a></span></li>
-      <li><b>Pipeline scripts</b><span><code>fetch_psi_metadata.py</code> → <code>fetch_psi_details.py</code> → <code>download_tables.py</code> → <code>build_tests.py</code> → <code>build_dashboard_data.py</code>. <a href="https://github.com/lujar001-star/FlameInFreeFall-NASA/tree/main/scripts" target="_blank" rel="noopener">scripts on GitHub</a></span></li>
+      <li><b>Pipeline scripts</b><span><code>fetch_psi_metadata.py</code> → <code>fetch_psi_details.py</code> → <code>download_tables.py</code> → <code>build_tests.py</code> → <code>verified_card_fixes.py</code> → <code>build_dashboard_data.py</code>. <a href="https://github.com/lujar001-star/FlameInFreeFall-NASA/tree/main/scripts" target="_blank" rel="noopener">scripts on GitHub</a></span></li>
     </ul>
 
     <h3 class="section">How the relevance score works</h3>
     <div class="formula">score = 0.40·conditions + 0.25·pillar_focus + 0.20·fuel_realism + 0.15·data_amount<br><br>
-      closeness(test) = exp(−[(ΔO<sub>2</sub>/8 pts)² + (ΔP/0.25 atm)²])   (× 0.7 if the value is assumed)<br>
+      closeness(test) = exp(−[(ΔO<sub>2</sub>/5 pts)² + (ΔP/0.25 atm)²])   (× 0.7 if the value is assumed; ΔP term = 0.5 if pressure is not reported)<br>
+      a test counts as "near" the target when closeness &gt; 0.5; rows listing several levels use the closest level actually tested<br>
       conditions = ½·best closeness + ½·min(1, 3 × share of tests with closeness &gt; 0.5)<br>
       pillar_focus = weighted mean of prevention/detection/suppression ratings (0–3); default weights depend on the environment and are adjustable<br>
       fuel_realism: solid 1.0 · solid emulator 0.9 · smoke source 0.8 · liquid 0.6 · gas 0.5 · aerosol 0.3–0.4<br>
@@ -638,8 +643,9 @@
     : p.includes('smoke') || p.startsWith('aerosol') ? 'Smoke / aerosol' : 'Gas';
   const PHASE_COLOR = {"Solid":"#ffcc33","Liquid":"#5bc0eb","Gas":"#f08a5d","Smoke / aerosol":"#b9a7ff"};
   const FUEL_SYN = {ethylene: 'c2h4', methane: 'ch4', propane: 'c3h8', ethane: 'c2h6', dodecane: 'c12h26'};  // tables mix names and formulas
-  const pillarPills = i => PILLARS.filter(p => i.pillars[p] >= 2).map(p => `<span class="pill ${cap(p)}">${cap(p)}</span>`).join('') || '<span class="pill">Related</span>';
+  const pillarPills = i => PILLARS.filter(p => i.pillars[p] >= 2).map(p => `<span class="pill ${cap(p)}">${cap(p)}</span>`).join('') || '<span class="pill" title="No pillar rated 2 or higher: indirect relevance, mainly model validation">Indirect</span>';
   const assumedTag = i => i.stats.assumed_share > 0.5 ? ' <span class="pill assumed" title="Not recorded in the table; ISS cabin air assumed">assumed</span>' : '';
+  const pAssumedTag = i => (!i.stats.p_measured && i.stats.pressure) ? ' <span class="pill assumed" title="Not recorded in the table; ISS cabin pressure assumed">assumed</span>' : '';
 
   /* ---------- Tabs ---------- */
   const tabs = document.querySelectorAll('[data-tab]');
@@ -707,14 +713,14 @@
     [G.solid_tests_at_moon_o2, 'solid-material tests at Moon-base O₂ (≥30%)', 'bad'],
     [G.partial_gravity_tests, 'partial-gravity (Moon/Mars) tests', 'bad'],
   ].map(([v, k, c]) => `<div class="stat ${c || ''}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
-  document.getElementById('gapCallout').innerHTML = `<b>Critical gap for the Moon base:</b> the ${G.solid_tests} solid-material tests in PSI (fabrics, plastics) were all run at or below ${G.solid_max_o2_measured}% O₂. Planned lunar habitats and rovers are expected to run at 30% or more. Only gas-flame (ACME) and liquid-droplet (FLEX family) tests reach that range (${G.tests_at_moon_o2} tests), so solid-material flammability at Moon-base conditions currently relies on extrapolation and models.`;
+  document.getElementById('gapCallout').innerHTML = `<b>Critical gap for the Moon base:</b> the ${G.solid_tests} solid-material tests in PSI (fabrics, plastics) were all run at or below ${G.solid_max_o2_measured}% O₂. Planned lunar habitats and rovers are expected to run at 30% or more. Only gas-flame (ACME) and liquid-droplet (FLEX family) tests were run with O₂ between 30 and 34% (${G.tests_at_moon_o2} tests), so solid-material flammability at Moon-base conditions currently relies on extrapolation and models.`;
 
   /* ---------- Mission relevance ---------- */
   const HAB = D.habitats;
   const habNames = Object.keys(HAB);
   const rstate = { hab: "Moon base", w: {...HAB["Moon base"].weights} };
   const psi = atm => (atm * 14.696).toFixed(1);
-  function habLabel(n) { const h = HAB[n]; return `${h.o2[0] === h.o2[1] ? h.o2[0] : h.o2[0] + '–' + h.o2[1]}% O₂ · ${h.p_atm[0] === h.p_atm[1] ? psi(h.p_atm[0]) : psi(h.p_atm[0]) + '–' + psi(h.p_atm[1])} psi`; }
+  function habLabel(n) { const h = HAB[n]; if (h.label) return h.label; return `${h.o2[0] === h.o2[1] ? h.o2[0] : h.o2[0] + '–' + h.o2[1]}% O₂ · ${h.p_atm[0] === h.p_atm[1] ? psi(h.p_atm[0]) : psi(h.p_atm[0]) + '–' + psi(h.p_atm[1])} psi`; }
   function renderHabitats() {
     document.getElementById('habitatPicker').innerHTML = habNames.map(n =>
       `<button class="habitat" type="button" data-hab="${esc(n)}" aria-pressed="${n === rstate.hab}"><b>${esc(n)}</b><small>${habLabel(n)} · ${esc(HAB[n].gravity)}</small></button>`).join('');
@@ -746,7 +752,8 @@
       const score = Object.entries(parts).reduce((a, [k, v]) => a + W[k] * v, 0);
       const why = [];
       why.push(c.best > 0.8 ? 'tests match this atmosphere' : c.best > 0.4 ? 'tests near this atmosphere' : 'tested far from this atmosphere');
-      if (c.fuel >= 0.9) why.push('realistic solid-material hazard');
+      if (c.fuel >= 1) why.push('real solid materials (fabrics, plastics)');
+      else if (c.fuel >= 0.9) why.push('gas burner emulating burning solids');
       const top = PILLARS.slice().sort((a, b) => i.pillars[b] - i.pillars[a])[0];
       why.push('strongest on ' + top);
       return {i, c, parts, score: 100 * score, why: why.join('; ')};
@@ -768,7 +775,7 @@
     } else gap = `${solidNear} solid-material tests are near this atmosphere, but all PSI data is from microgravity; ${esc(HAB[rstate.hab].gravity)} behaviour must be bounded with 1-g data.`;
     document.getElementById('habitatSummary').innerHTML =
       `<b>In short (${esc(rstate.hab)}):</b> the most relevant datasets are <b>${top.map(esc).join('</b>, <b>')}</b>. ` +
-      `${nearTests} tests from ${near.length} investigation${near.length === 1 ? '' : 's'} are close to its atmosphere. <b>Biggest gap:</b> ${gap}`;
+      `${nearTests} tests from ${near.length} investigation${near.length === 1 ? '' : 's'} are close to its oxygen and pressure. <b>Biggest gap:</b> ${gap}`;
   }
   function renderRank() {
     const lab = {conditions: 'Conditions', safety_focus: 'Pillars', fuel: 'Fuel', data: 'Data'};
@@ -835,8 +842,8 @@
       <tr class="clickable" data-toggle="${i.accession}">
         <td class="name">${esc(i.name)}</td><td>${esc(phaseGroup(i.fuel_phase))}</td><td>${esc(i.family)}</td>
         <td>${pillarPills(i)}</td><td class="num">${i.stats.tests}</td>
-        <td class="num">${fmtR(i.stats.o2)}${i.stats.o2_measured ? '' : assumedTag(i)}</td>
-        <td class="num">${fmtR(i.stats.pressure, 2)}</td><td class="num">${fmtR(i.stats.flow)}</td></tr>
+        <td class="num">${fmtR(i.stats.o2)}${i.stats.o2_measured || !i.stats.o2 ? '' : ' <span class="pill assumed" title="Not recorded in the table; ISS cabin air assumed">assumed</span>'}</td>
+        <td class="num">${fmtR(i.stats.pressure, 2)}${pAssumedTag(i)}</td><td class="num">${fmtR(i.stats.flow)}</td></tr>
       ${state.open === i.accession ? `<tr class="detail"><td colspan="8">${detailHTML(i)}</td></tr>` : ''}`).join('');
     document.querySelectorAll('[data-toggle]').forEach(r => r.onclick = () => {
       state.open = state.open === r.dataset.toggle ? null : r.dataset.toggle; render();
@@ -970,8 +977,8 @@
       ['Fuel type', i => esc(i.fuel_phase)],
       ['Fire-safety focus', i => pillarPills(i)],
       ['Tests in PSI table', i => i.stats.tests],
-      ['O₂ range (%)', i => fmtR(i.stats.o2) + (i.stats.o2_measured ? '' : assumedTag(i))],
-      ['Pressure (atm)', i => fmtR(i.stats.pressure, 2)],
+      ['O₂ range (%)', i => fmtR(i.stats.o2) + (i.stats.o2_measured || !i.stats.o2 ? '' : ' <span class="pill assumed" title="Not recorded in the table; ISS cabin air assumed">assumed</span>')],
+      ['Pressure (atm)', i => fmtR(i.stats.pressure, 2) + pAssumedTag(i)],
       ['Flow (cm/s)', i => fmtR(i.stats.flow)],
       ['Fuels', i => esc(i.stats.fuels.slice(0, 4).join(', '))],
       ['What varied', i => ul(i.what_varied)],
@@ -1165,7 +1172,7 @@
   const EQUIP = [
     {t: "Ventilation shutdown procedures", p: "suppression",
      q: "Is turning off the fans enough to put out a fire in an oxygen-enriched habitat?",
-     f: "Stopping ventilation is an established first step in fighting spacecraft fires. ACME BRE found that flames emulating burning PMMA and nylon kept burning steadily with no air flow in elevated-oxygen atmospheres, while the same flames at 21% O₂ self-extinguished quickly.",
+     f: "Stopping ventilation is an established first step in fighting spacecraft fires. PSI reports that in ACME BRE, flames emulating burning PMMA and nylon kept burning steadily with no air flow in elevated-oxygen atmospheres, while similar flames at 21% O₂ self-extinguished quickly (results described as preliminary).",
      n: "Fire response for Moon bases and rovers cannot rely on fan shutoff alone; procedures and hardware should pair it with active suppression.",
      g: "BRE used gas-fed burners that emulate solids; real solid materials have not been tested at these oxygen levels in microgravity.",
      inv: ["PSI-20"], src: "PSI-20 research impacts"},
@@ -1183,13 +1190,13 @@
      inv: ["PSI-102", "PSI-101", "PSI-47"], src: "PSI-102 and PSI-101 research impacts"},
     {t: "Extinguishing agents and portable extinguishers", p: "suppression",
      q: "Which agent, and how much of it, puts out a fire in microgravity?",
-     f: "FLEX measured how much oxygen a flame needs to keep burning (the limiting oxygen index) with and without the suppressants CO₂ and helium, across pressures; BASS tested nitrogen as a suppressant for burning solids, a direct link to current and planned extinguishment techniques.",
+     f: "FLEX was designed to determine how much oxygen a flame needs to keep burning (the limiting oxygen index) across pressures and how suppressants shift it; its table records 274 droplet tests with CO₂ and helium dilution. BASS assessed nitrogen as a suppressant for burning solids, which PSI calls a direct link to current and planned extinguishment techniques.",
      n: "Agent choice and required concentrations for extinguishers and total-flooding systems in exploration vehicles.",
      g: "Suppression data is for droplets (FLEX) and solids at cabin air (BASS); no suppression tests on solids at 30%+ O₂.",
      inv: ["PSI-69", "PSI-68", "PSI-26"], src: "PSI-69 objectives and approach; PSI-26 research impacts"},
     {t: "Cabin oxygen limits and monitoring", p: "prevention",
      q: "How much oxygen can a habitat hold before materials become too flammable?",
-     f: "FLEX tests span 12 to 34% O₂ and about 0.7 to 3 atm; BRE explicitly tested NASA's candidate exploration atmospheres (14.7 psia / 21%, 10.2 psia / 26.5%, 8.2 psia / 34% O₂); BASS-II ran solids at reduced oxygen down to 13.6%.",
+     f: "FLEX tests span 12 to 34% O₂ and about 0.7 to 3 atm. BRE's objectives list NASA's candidate exploration atmospheres (14.7 psia / 21%, 10.2 psia / 26.5%, 8.2 psia / 34% O₂), and its table shows flames at 21, 25, 26.5, 34 and 40% O₂ (pressures not recorded). BASS-II ran solids at reduced oxygen down to 13.6%.",
      n: "Evidence for setting habitat O₂ setpoints and alarm thresholds, and for how tightly O₂ must be controlled.",
      g: "Trade-off curves for solids between 22% and 34% O₂ do not exist in PSI.",
      inv: ["PSI-69", "PSI-20", "PSI-25"], src: "PSI-20 objectives; FLEX and BASS-II tables"},
@@ -1299,7 +1306,7 @@
      inv: ["PSI-102", "PSI-101", "PSI-47", "PSI-179"]},
     {t: "Clean-agent and inert-gas fire suppression", ev: "psi", who: "Data centers, aircraft engine bays, ships, museums",
      problem: "Rooms where water would cause damage use gaseous agents (CO₂, inert gases); systems must be sized to reliably put fires out.",
-     data: "FLEX and FLEX-2 measured the oxygen level at which flames go out with and without CO₂ and helium dilution, across pressures.",
+     data: "FLEX was designed to determine the lowest oxygen level that sustains burning and how CO₂ and helium shift it across pressures; its table records how each of 274 droplet tests ended (extinction, completion or disruption). FLEX-2 extends this to fuel mixtures in nitrogen or helium.",
      use: "Extinction limits and diluent effectiveness to check suppressant concentration requirements.",
      inv: ["PSI-69", "PSI-68"]},
     {t: "Better flammability tests for vehicle materials", ev: "psi", who: "Aircraft cabins, submarines, trains, buses",
@@ -1314,12 +1321,12 @@
      inv: ["PSI-69", "PSI-39", "PSI-10", "PSI-159"]},
     {t: "Cleaner combustion and less soot pollution", ev: "related", who: "Engine and burner designers, air-quality agencies",
      problem: "Soot is a major air pollutant and the main source of flame radiation; predicting it is hard because buoyancy distorts flames on Earth.",
-     data: "SPICE measured smoke points of jet flames, and ACME Flame Design and CLD Flame mapped when flames start producing soot.",
+     data: "SPICE identified the smoke points of jet flames (where they start emitting soot); ACME Flame Design and CLD Flame were designed to map soot inception and sooting tendency versus dilution, flow and pressure.",
      use: "Benchmark data for the soot models used to design cleaner burners, furnaces and engines.",
      inv: ["PSI-107", "PSI-106", "PSI-10", "PSI-21"]},
     {t: "Hidden 'cool flames' and re-ignition hazards", ev: "related", who: "Fuel storage, chemical plants, engine developers",
      problem: "Cool flames are faint, low-temperature reactions that can survive after a visible flame goes out and lead to re-ignition or auto-ignition.",
-     data: "FLEX droplet data include cool flames, analyzed further by the PSI ground studies PSI-117 and PSI-142; CFI and ACME CFI-G mapped when cool flames occur versus pressure, oxygen and fuel.",
+     data: "FLEX droplet data include cool flames, analyzed further by the PSI ground studies PSI-117 and PSI-142. CFI and ACME CFI-G were designed to determine when cool flames occur versus pressure, oxygen and fuel; the CFI-G table records whether a cool flame was observed.",
      use: "Low-temperature chemistry data for auto-ignition models used in process safety and advanced engines.",
      inv: ["PSI-69", "PSI-39", "PSI-159"]},
   ];

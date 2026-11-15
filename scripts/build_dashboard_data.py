@@ -74,6 +74,21 @@ RANGE_COLS = {"o2_pct": ("o2_min_pct", "o2_max_pct"), "pressure_atm": ("pressure
               "flow_cm_s": ("flow_min_cm_s", "flow_max_cm_s")}
 
 
+def count_rows_with_o2_in(t, lo_target, hi_target):
+    """Table rows with at least one tested O2 value inside [lo_target, hi_target].
+    Rows listing discrete levels use those levels; single-value rows use their value; rows that
+    only give a range without levels (none currently) are not counted."""
+    n = 0
+    for lo, hi, lv in zip(t["o2_min_pct"], t["o2_max_pct"], t["o2_levels_pct"]):
+        if lo != lo:  # NaN: O2 unknown
+            continue
+        levels = [float(x) for x in str(lv).split(";") if x.strip() not in ("", "nan")]
+        if not levels and lo == hi:
+            levels = [lo]
+        n += any(lo_target <= v <= hi_target for v in levels)
+    return int(n)
+
+
 def variable_matrix(t, accessions):
     import pandas as pd
     """Per investigation and variable: how many tests report it and whether it varies."""
@@ -139,6 +154,8 @@ def main() -> None:
                 "tests": int(len(sub)),
                 "o2": rng(pd_concat(sub, "o2_min_pct", "o2_max_pct")),
                 "o2_measured": bool(len(measured_o2)),
+                "p_measured": bool(len(sub[~sub["assumed"].fillna("").str.contains("pressure")
+                                          & sub["pressure_min_atm"].notna()])),
                 "pressure": rng(pd_concat(sub, "pressure_min_atm", "pressure_max_atm")),
                 "flow": rng(pd_concat(sub, "flow_min_cm_s", "flow_max_cm_s")),
                 "fuels": fuels.value_counts().head(6).index.tolist(),
@@ -170,6 +187,7 @@ def main() -> None:
         habitats[name] = {
             "o2": list(hab["o2"]), "p_atm": [round(x, 3) for x in hab["p_atm"]],
             "gravity": hab["gravity"], "note": hab["note"], "weights": hab["weights"], "components": comps,
+            "label": hab.get("label", ""),
         }
 
     # compact test rows for the chart: [accession, name, o2, p, phase, o2_assumed(0/1), fuel, test_id, config]
@@ -199,7 +217,7 @@ def main() -> None:
     gaps = {
         "solid_max_o2_measured": round(float(solid["o2_max_pct"].max()), 1) if len(solid) else None,
         "solid_tests": int((t["fuel_phase"] == "solid").sum()),
-        "tests_at_moon_o2": int(((t["o2_max_pct"] >= 30) & (t["o2_min_pct"] <= 34)).sum()),
+        "tests_at_moon_o2": count_rows_with_o2_in(t, 30, 34),
         "solid_tests_at_moon_o2": int(((t["fuel_phase"] == "solid") & (t["o2_max_pct"] >= 30)).sum()),
         "tests_total": int(len(t)),
         "max_o2": round(float(t["o2_max_pct"].max()), 1),
