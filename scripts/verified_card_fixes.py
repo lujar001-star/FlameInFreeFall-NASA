@@ -154,7 +154,7 @@ ROUND2 = {
 ROUND2_FIELDS = {
     "PSI-25": {"habitat_note": "The largest solid-material test set in PSI with varied oxygen (129 tests), but all at or below ~22% O2; extrapolating to 30%+ Moon-base air requires models."},
     "PSI-26": {"summary": "ISS campaign burning practical solid fuels (SIBAL fabric, PMMA, Nomex, Ultem) in the glovebox flow duct, including wake flames and tests of an inert gaseous extinguishing agent."},
-    "PSI-98": {"habitat_note": "Realistic, vehicle-scale fire data (together with Saffire-II and -III, the large-scale fire tests in PSI); directly relevant to spacecraft and rover cabin fire scenarios."},
+    "PSI-98": {"habitat_note": "Realistic, vehicle-scale fire data (together with Saffire-II and -III, the large-scale fire tests in PSI), all at about 21% O2: relevant to spacecraft and rover cabin fire scenarios, but not yet at Moon-base oxygen levels."},
     "PSI-20": {"habitat_note": "Its objectives list NASA's candidate exploration atmospheres, including 34% O2 at 8.2 psia, which is why it ranks first for Moon-base and rover atmospheres in this dashboard."},
     "PSI-102": {"habitat_note": "Applies to any closed habitat, where early smoke detection is critical."},
 }

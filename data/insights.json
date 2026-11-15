@@ -113,7 +113,7 @@
       ],
       "takeaway": "Designed to determine how rapidly a large-scale fire grows in low gravity and to compare low-g flammability with NASA's 1-g screening test. In the table, the fabric burned 420 s in concurrent flow versus 70 s in opposed flow.",
       "modeling_value": "Table: sample, flow, O2 and burn time. Fire growth, O2/CO2/pressure response and radiometer data for validating vehicle-level fire models are in the PSI data files.",
-      "habitat_note": "Realistic, vehicle-scale fire data (together with Saffire-II and -III, the large-scale fire tests in PSI); directly relevant to spacecraft and rover cabin fire scenarios.",
+      "habitat_note": "Realistic, vehicle-scale fire data (together with Saffire-II and -III, the large-scale fire tests in PSI), all at about 21% O2: relevant to spacecraft and rover cabin fire scenarios, but not yet at Moon-base oxygen levels.",
       "earth_application": "Large-scale fire growth in confined vehicles.",
       "limitations": [
         "Very few samples",
