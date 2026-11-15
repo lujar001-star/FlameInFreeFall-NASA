@@ -18,10 +18,20 @@ TABLES = ROOT / "data" / "tables"
 OUT = ROOT / "data" / "tests.csv"
 
 FIELDS = [
+    # identity
     "accession", "investigation", "test_id", "fuel", "fuel_phase", "config",
+    # test conditions (model inputs)
     "o2_min_pct", "o2_max_pct", "pressure_min_atm", "pressure_max_atm",
-    "flow_min_cm_s", "flow_max_cm_s", "diluent", "sample_size", "outcome",
-    "gravity", "assumed", "notes",
+    "flow_min_cm_s", "flow_max_cm_s", "flow_direction", "diluent", "co2_pct", "he_pct",
+    "size_mm", "fuel_flow_mg_s", "aging_time_s",
+    # calculated design parameters (reported in the table, computed not measured)
+    "t_adiabatic_K", "z_st",
+    # measured results (model outputs)
+    "ignited", "end_state", "burn_time_s", "burning_rate_mm2_s", "extinction_diam_mm",
+    "spread_rate_mm_s", "spread_rate_1g_mm_s", "final_o2_pct", "final_co2_pct", "final_co_ppm",
+    "peak_burner_temp_K", "cool_flame", "flames_ignited", "rt_r0",
+    # text
+    "sample_size", "outcome", "gravity", "assumed", "notes",
 ]
 
 ISS_AIR_O2 = 21.0
@@ -75,6 +85,20 @@ def one(text: str, scale: float = 1.0):
     return round(v[0] * scale, 4) if v else ""
 
 
+def yes_no(text: str) -> str:
+    t = (text or "").strip().lower()
+    if t.startswith("yes"):
+        return "yes"
+    if t.startswith("no"):
+        return "no"
+    if t.startswith("flash"):
+        return "flash"
+    return ""
+
+
+END_STATE = {"se": "self-extinguished", "ft": "flow terminated"}
+
+
 def row(**kw) -> dict:
     base = {f: "" for f in FIELDS}
     base["gravity"] = "microgravity (ISS)"
@@ -109,10 +133,16 @@ def flex():
             accession="PSI-69", investigation="FLEX", test_id=r.get("FLEX Identifier"),
             fuel=r.get("Fuel"), fuel_phase="liquid", config="droplet (MDCA)",
             o2_min_pct=o2, o2_max_pct=o2, pressure_min_atm=p, pressure_max_atm=p,
-            diluent="+".join(dil),
+            diluent="+".join(dil), co2_pct=one(co2, 100) if co2 != "" else "", he_pct=one(he, 100) if he != "" else "",
+            size_mm=one(r.get("Droplet initial diameter; mm")),
+            burn_time_s=one(r.get("Burn time; s")),
+            burning_rate_mm2_s=one(r.get("Burning rate; mm")),
+            extinction_diam_mm=one(r.get("Visible flame extinction diameter; mm")),
+            end_state=r.get("Test end", "").lower(),
             sample_size=f"droplet {r.get('Droplet initial diameter; mm')} mm",
             outcome=r.get("Test end", ""),
-            notes=f"CO2 frac {co2}; He frac {he}; burn time {r.get('Burn time; s')} s",
+            notes="burning rate column is headed 'mm' in the PSI table; values are consistent with a "
+                  "droplet burning-rate constant in mm^2/s",
         ))
     return out
 
@@ -145,7 +175,7 @@ def cfi():
             fuel=r.get("Fuel"), fuel_phase="liquid",
             config="droplet (MDCA)" + (", fiber-supported" if r.get("Fiber", "").lower() == "yes" else ""),
             o2_min_pct=o2, o2_max_pct=o2, pressure_min_atm=p, pressure_max_atm=p,
-            diluent="N2" + ("+He" if he not in ("", 0) else ""),
+            diluent="N2" + ("+He" if he not in ("", 0) else ""), he_pct=one(he, 100) if he != "" else "",
         ))
     return out
 
@@ -168,11 +198,30 @@ def bass2():
         out.append(cabin(row(
             accession="PSI-25", investigation="BASS-II", test_id=r.get("Test #"),
             fuel=r.get("Fuel Sample Material"), fuel_phase="solid", config="flat/rod sample in flow duct (MSG)",
-            o2_min_pct=o2, o2_max_pct=o2, diluent="N2 (air)",
-            notes=f"Fan display {r.get('Fan display')}; flow restrictor {r.get('Flow restrictor')}; "
-                  f"final O2 {r.get('Calibrated final O2 % by vol')}%",
+            o2_min_pct=o2, o2_max_pct=o2, diluent="N2 (air)", co2_pct=one(r.get("Initial CO2 % by vol")),
+            final_o2_pct=one(r.get("Calibrated final O2 % by vol")),
+            final_co2_pct=one(r.get("Final CO2 % by vol")),
+            final_co_ppm=one(r.get("Final CO (ppm)")),
+            notes=f"Fan display {r.get('Fan display')}; flow restrictor {r.get('Flow restrictor')} "
+                  f"(flow speed not given in cm/s)",
         )))
     return out
+
+
+def thickness_mm(text: str, header_in_cm: bool):
+    """Sample thickness in mm. Handles '0.27 mm', '.33 cm', '1 cm', bare numbers under a '(cm)'
+    header, and the table typo '037 mm' (= 0.37 mm). Returns '' when not numeric ('See Fig. 5')."""
+    t = (text or "").strip()
+    if t.startswith("037"):
+        return 0.37
+    v = nums(t)
+    if not v:
+        return ""
+    if "mm" in t:
+        return round(v[0], 3)
+    if "cm" in t or header_in_cm:
+        return round(v[0] * 10, 3)
+    return ""
 
 
 def saffire(acc, name, file):
@@ -186,13 +235,20 @@ def saffire(acc, name, file):
         thick = r.get("Sample Thickness (cm)") or r.get("Sample Thickness") or r.get("Samle Thickness") or ""
         length = r.get("Sample Length (cm)") or r.get("Sample Length") or ""
         width = r.get("Sample Width (cm)") or r.get("Sample Width") or ""
+        direction = (r.get("Flow Direction") or r.get("Direction") or "").strip().lower()
+        burn = r.get("Burn Time (s)", "")
+        th_mm = thickness_mm(thick, header_in_cm="Sample Thickness (cm)" in r)
         out.append(cabin(row(
             accession=acc, investigation=name, test_id=sid,
             fuel=r.get("Material") or "(see previous)", fuel_phase="solid",
-            config="large sample, " + (r.get("Flow Direction") or r.get("Direction") or "").strip().lower() + " flow (Cygnus)",
+            config=f"large sample, {direction} flow (Cygnus)",
             o2_min_pct=o2[0], o2_max_pct=o2[1], flow_min_cm_s=flow, flow_max_cm_s=flow,
+            flow_direction=direction, size_mm=th_mm,
+            burn_time_s=one(burn), end_state="insignificant burning" if "insignificant" in burn.lower() else "",
+            spread_rate_mm_s=one(r.get("?-g Spread Length", "")) if "mm/s" in r.get("?-g Spread Length", "") else "",
+            spread_rate_1g_mm_s=one(r.get("1-g Spread Rate", "")) if "mm/s" in r.get("1-g Spread Rate", "") else "",
             diluent="N2 (air)", sample_size=f"thick {thick}; L {length}; W {width}",
-            outcome=f"burn time {r.get('Burn Time (s)', '')}",
+            outcome=f"burn time {burn}",
             gravity="microgravity (Cygnus vehicle)",
         )))
     return out
@@ -205,8 +261,8 @@ def same():
             accession="PSI-102", investigation="SAME", test_id=r.get("Sample #"),
             fuel=r.get("Sample Material"), fuel_phase="solid (smoke source)", config="heated sample, smoke aging (MSG)",
             flow_min_cm_s=one(r.get("Air Flow (cm/s)")), flow_max_cm_s=one(r.get("Air Flow (cm/s)")),
-            diluent="N2 (air)",
-            notes=f"weight loss {r.get('Weight loss rate (mg/min)')} mg/min; aging {r.get('Aging Duration (minutes)')} min",
+            diluent="N2 (air)", aging_time_s=one(r.get("Aging Duration (minutes)"), 60),
+            notes=f"heating set to a weight-loss rate of {r.get('Weight loss rate (mg/min)')} mg/min",
         )))
     return out
 
@@ -219,7 +275,9 @@ def same_r():
             accession="PSI-101", investigation="SAME-R", test_id=r.get("SAME Test #"),
             fuel=r.get("Sample Type"), fuel_phase="solid (smoke source)", config="heated sample, smoke aging (MSG)",
             flow_min_cm_s=v, flow_max_cm_s=v, diluent="N2 (air)",
-            notes=f"{r.get('Description')}; duration {r.get('Duration (sec)')} s",
+            aging_time_s=one(r.get("Net aging time (sec)")), rt_r0=one(r.get("Rt/R0")),
+            notes=f"{r.get('Description')}; heating duration {r.get('Duration (sec)')} s; "
+                  f"Rt/R0 reported as in the PSI table",
         )))
     return out
 
@@ -245,8 +303,9 @@ def spice():
             accession="PSI-107", investigation="SPICE", test_id=f"{r.get('GMT date')}-{r.get('GMT ignition')}",
             fuel=r.get("Fuel"), fuel_phase="gas", config="co-flow jet flame, fan-driven duct (MSG)",
             flow_min_cm_s=a, flow_max_cm_s=a, diluent="N2 (air)",
+            size_mm=one(r.get("Nozzle (mm)")), fuel_flow_mg_s=one(r.get("HC Fuel Rate (mg/s)") or r.get("Fuel Rate (mg/s)")),
             sample_size=f"nozzle {r.get('Nozzle (mm)')} mm",
-            notes=f"fuel rate {r.get('Fuel Rate (mg/s)')} mg/s",
+            notes="smoke points are identified from flame imagery; the table lists the flow settings",
         )))
     return out
 
@@ -273,6 +332,7 @@ def acme_bre():
             fuel=r.get("Fuel Bottle"), fuel_phase="gas (solid emulator)", config="porous burner emulating burning solid (CIR)",
             o2_min_pct=min(o2) if o2 else "", o2_max_pct=max(o2) if o2 else "",
             diluent="N2", sample_size=f"burner {r.get('Burner Size (mm)')} mm",
+            size_mm=one(r.get("Burner Size (mm)")), flames_ignited=one(r.get("Flames Ignited")),
             outcome=f"{r.get('Flames Ignited')} flames ignited",
             assumed="", notes="Pressure varied but not listed in table",
         ))
@@ -289,6 +349,7 @@ def acme_daylog(acc, name, file, config):
             accession=acc, investigation=name, test_id=r.get("Test Day") or r.get("Test Day*"),
             fuel=r.get("Fuel Bottle"), fuel_phase="gas", config=config,
             o2_min_pct=o2[0], o2_max_pct=o2[1],
+            flames_ignited=one(r.get('Flames ignited') or r.get('Flames Ignited') or r.get('Flames Ignited*')),
             outcome=f"{r.get('Flames ignited') or r.get('Flames Ignited') or r.get('Flames Ignited*')} flames ignited",
             notes=(r.get("Test Type", "") + ("; mesh " + r["Mesh Polarity"] if r.get("Mesh Polarity") else "")),
         )
@@ -305,7 +366,8 @@ def flame_design():
             accession="PSI-10", investigation="ACME Flame Design", test_id=r.get("Test"),
             fuel=r.get("Fuel"), fuel_phase="gas", config="spherical burner, normal flame (CIR)",
             o2_min_pct=o2, o2_max_pct=o2, pressure_min_atm=p, pressure_max_atm=p, diluent="N2",
-            notes=f"Tad {r.get('Tad (K)')} K; Zst {r.get('mean Zst')}",
+            fuel_flow_mg_s=one(r.get("mfuel (mg/s)")), t_adiabatic_K=one(r.get("Tad (K)")), z_st=one(r.get("mean Zst")),
+            notes="flows ramped during test" if "RAMPED" in r.get("Tad (K)", "") else "",
         ))
     for r in read("PSI-10_Experimental table_Flame Design_Inverse Flame.csv"):
         o2 = one(r.get("XO2"), 100)
@@ -314,7 +376,8 @@ def flame_design():
             accession="PSI-10", investigation="ACME Flame Design", test_id=r.get("Test"),
             fuel="C2H4 (ambient)", fuel_phase="gas", config="spherical burner, inverse flame (CIR)",
             o2_min_pct=o2, o2_max_pct=o2, pressure_min_atm=p, pressure_max_atm=p, diluent="N2",
-            notes=f"O2 issues from burner; Tad {r.get('Tad (K)')} K",
+            t_adiabatic_K=one(r.get("Tad (K)")), z_st=one(r.get("mean Zst")),
+            notes="O2 value is the oxidizer stream from the burner (inverse flame)",
         ))
     return out
 
@@ -328,6 +391,11 @@ def cfi_g():
             accession="PSI-159", investigation="ACME CFI-G", test_id=r.get("Test"),
             fuel=r.get("Fuel"), fuel_phase="gas", config="spherical burner, normal flame (CIR)",
             o2_min_pct=o2, o2_max_pct=o2, pressure_min_atm=p, pressure_max_atm=p, diluent="N2",
+            fuel_flow_mg_s=one(r.get("mHC (mg/s)")), t_adiabatic_K=one(r.get("Tad (K)")), z_st=one(r.get("Zst")),
+            ignited=yes_no(r.get("Hot ignition")), burn_time_s=one(r.get("burn time (sec)")),
+            end_state=END_STATE.get(r.get("Self-ext or flow term", "").strip().lower(), ""),
+            peak_burner_temp_K=one(r.get("Peak burner T (C )"), 1) + 273.15 if one(r.get("Peak burner T (C )")) != "" else "",
+            cool_flame=yes_no(r.get("Cool flame?")),
             outcome=f"cool flame: {r.get('Cool flame?') or 'n/a'}; hot ignition: {r.get('Hot ignition')}; "
                     f"{r.get('Self-ext or flow term')}",
             notes=r.get("Comments", ""),
@@ -339,8 +407,12 @@ def cfi_g():
             accession="PSI-159", investigation="ACME CFI-G", test_id=r.get("Test"),
             fuel=f"{r.get('Fuel')} (ambient)", fuel_phase="gas", config="spherical burner, inverse flame (CIR)",
             o2_min_pct=o2, o2_max_pct=o2, pressure_min_atm=p, pressure_max_atm=p, diluent="N2",
+            t_adiabatic_K=one(r.get("Tad (K)")), z_st=one(r.get("Zst")),
+            ignited=yes_no(r.get("Hot ignition")), burn_time_s=one(r.get("burn time (sec)")),
+            end_state=END_STATE.get(r.get("Self -ext or flow term", "").strip().lower(), ""),
+            peak_burner_temp_K=one(r.get("Peak burner temp (K)")),
             outcome=f"hot ignition: {r.get('Hot ignition')}; {r.get('Self -ext or flow term')}",
-            notes=f"O2 issues from burner; {r.get('Comments', '')}",
+            notes=f"O2 value is the oxidizer stream from the burner (inverse flame); {r.get('Comments', '')}".rstrip("; "),
         ))
     return out
 
@@ -381,11 +453,19 @@ def validate(r: dict) -> dict:
         if v is not None and v <= 0:
             bad.append(f"{c}={r[c]}")
             r[c] = ""
-    for c in ("flow_min_cm_s", "flow_max_cm_s"):
+    for c in ("flow_min_cm_s", "flow_max_cm_s", "size_mm", "fuel_flow_mg_s", "aging_time_s", "burn_time_s",
+              "burning_rate_mm2_s", "extinction_diam_mm", "spread_rate_mm_s", "spread_rate_1g_mm_s",
+              "final_o2_pct", "final_co2_pct", "final_co_ppm", "flames_ignited", "t_adiabatic_K", "peak_burner_temp_K"):
         v = num(c)
         if v is not None and v < 0:
             bad.append(f"{c}={r[c]}")
             r[c] = ""
+    if num("peak_burner_temp_K") is not None:
+        if num("peak_burner_temp_K") < 280:  # 0 C placeholder: burner never starts below room temperature
+            bad.append(f"peak_burner_temp_K={r['peak_burner_temp_K']}")
+            r["peak_burner_temp_K"] = ""
+        else:
+            r["peak_burner_temp_K"] = round(num("peak_burner_temp_K"), 2)
     if bad:
         r["notes"] = (r["notes"] + "; " if r["notes"] else "") + "removed invalid: " + ", ".join(bad)
     return r

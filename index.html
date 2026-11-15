@@ -126,7 +126,21 @@
   .weights strong { font-size:14px; }
 
   /* Chart */
-  #chart { width:100%; height:560px; background:var(--black); border:1px solid var(--line); }
+  #chart, .chartbox { width:100%; height:560px; background:var(--black); border:1px solid var(--line); }
+  .chartbox { height:460px; }
+
+  /* Modeling matrix */
+  table.matrix { min-width:1100px; font-size:13px; }
+  table.matrix th { white-space:normal; font-size:12px; vertical-align:bottom; padding:8px 6px; cursor:help; }
+  table.matrix th.grp { text-align:center; font-size:12.5px; color:#fff; cursor:default; }
+  table.matrix th.g-condition, table.matrix td.g-condition { background-clip:padding-box; }
+  table.matrix td { padding:8px 6px; text-align:center; }
+  table.matrix td.name { text-align:left; }
+  .mx { display:inline-block; min-width:28px; padding:1px 6px; border-radius:3px; font-weight:700; font-size:12px; font-variant-numeric:tabular-nums; }
+  .mx.varied { background:#1f6b4a; } .mx.fixed { background:#4a3a40; color:#d8c8cc; } .mx.assumed { border:1px dashed #c9a0aa; color:#e0c4ca; }
+  .mx.result { background:#8a6a00; }
+  .ready-vars { font-size:13.5px; color:#eadde0; }
+  .ready-vars b { color:var(--gold); }
   .legend-note { color:var(--muted); font-size:13.5px; margin-top:10px; }
 
   /* O2 bars */
@@ -212,6 +226,7 @@
       <li><button role="tab" data-tab="investigations" aria-selected="false">Investigations</button></li>
       <li><button role="tab" data-tab="conditions" aria-selected="false">Test Conditions</button></li>
       <li><button role="tab" data-tab="compare" aria-selected="false">Compare</button></li>
+      <li><button role="tab" data-tab="modeling" aria-selected="false">Modeling Data</button></li>
       <li><button role="tab" data-tab="hardware" aria-selected="false">Hardware</button></li>
       <li><button role="tab" data-tab="firesafety" aria-selected="false">Fire Safety</button></li>
       <li><button role="tab" data-tab="earth" aria-selected="false">Earth Applications</button></li>
@@ -243,6 +258,7 @@
       <article class="card"><h3>Test conditions</h3><p>Every individual test plotted by oxygen and pressure against the habitat targets, showing where the data is and where it is missing.</p><a class="go" href="#" data-go="conditions">Open the condition map</a></article>
       <article class="card"><h3>Investigations</h3><p>What each study varied, held constant and measured, its fire-safety takeaway, modeling value and limitations.</p><a class="go" href="#" data-go="investigations">Browse investigations</a></article>
       <article class="card"><h3>Compare</h3><p>Put up to three investigations side by side to see which conditions and hardware they share.</p><a class="go" href="#" data-go="compare">Compare</a></article>
+      <article class="card"><h3>Modeling data</h3><p>Test conditions and measured results (burn time, burning rate, extinction size, ignition, spread rate) in one file, with an explorer to plot any result against any condition.</p><a class="go" href="#" data-go="modeling">Get modeling data</a></article>
     </div>
   </div>
 </section>
@@ -315,6 +331,33 @@
   </div>
 </section>
 
+<!-- MODELING DATA -->
+<section class="view" id="view-modeling">
+  <div class="wrap">
+    <h2>Data for predictive modeling</h2>
+    <p class="lede">Flammability and fire-scenario models need two things from experiments: the <b>conditions</b> that were set (inputs) and the <b>results</b> that were measured (outputs). We extracted both from every PSI experiment table into one file with consistent units.</p>
+    <div class="stats" id="modelStats"></div>
+
+    <h3 class="section">Model-ready datasets</h3>
+    <p class="lede">Investigations that vary at least one condition <i>and</i> report at least one per-test measured result for 20+ tests: the datasets you can fit or validate a model against directly. (Daily "flames ignited" tallies do not count.)</p>
+    <div class="grid" id="modelReady"></div>
+
+    <h3 class="section">Explore relationships</h3>
+    <p class="lede">Pick a dataset and two variables to see how a result depends on a condition. Only variables that dataset reports are listed.</p>
+    <div class="controls" id="explorerControls"></div>
+    <div id="explorerChart" class="chartbox" role="img" aria-label="Scatter plot of the selected variables"></div>
+    <p class="legend-note" id="explorerNote"></p>
+
+    <h3 class="section">What each investigation provides</h3>
+    <p class="lede"><span class="mx varied">12</span> varied across tests (number of distinct values) · <span class="mx fixed">1</span> held fixed · <span class="mx assumed">A</span> assumed cabin air · blank = not reported in the PSI table. Hover a column heading for its meaning.</p>
+    <div class="tablewrap"><table class="matrix" id="matrixTable"></table></div>
+
+    <h3 class="section">Data dictionary</h3>
+    <div class="tablewrap"><table id="dictTable"></table></div>
+    <div class="callout"><b>Before you fit a model:</b> adiabatic flame temperature and stoichiometric mixture fraction are <i>calculated</i> by the investigators, not measured. FLEX-2 rows are condition ranges, not single tests. ACME inverse-flame O₂ is the burner stream. Flame images, soot fields, radiometer and thermocouple time series stay in the raw PSI data files; use the PSI record links to download them. <a class="go" href="data/tests.csv" download style="margin:0">Download tests.csv (all conditions and results)</a></div>
+  </div>
+</section>
+
 <!-- HARDWARE -->
 <section class="view" id="view-hardware">
   <div class="wrap">
@@ -361,7 +404,7 @@
     <p class="lede">Everything here is reproducible from public NASA data with the scripts in our repository.</p>
     <h3 class="section">Download</h3>
     <ul class="reslist">
-      <li><b>Normalized test table</b><span>All tests in common units (O<sub>2</sub> %, atm, cm/s), with an <code>assumed</code> column. <a href="data/tests.csv" download>tests.csv</a></span></li>
+      <li><b>Normalized test table</b><span>All tests with their conditions and measured results in common units (O<sub>2</sub> %, atm, cm/s, mm, s, K), with an <code>assumed</code> column. Column meanings are in the <a href="#" data-go="modeling" style="border:0;text-decoration:underline">data dictionary</a>. <a href="data/tests.csv" download>tests.csv</a></span></li>
       <li><b>Insight cards</b><span>Curated objectives, variables, measurements, takeaways and limitations per investigation. <a href="data/insights.json" download>insights.json</a></span></li>
       <li><b>Original experiment tables</b><span>Unmodified CSVs from PSI, one per investigation. <a href="https://github.com/lujar001-star/FlameInFreeFall-NASA/tree/main/data/tables" target="_blank" rel="noopener">data/tables on GitHub</a></span></li>
       <li><b>Pipeline scripts</b><span><code>fetch_psi_metadata.py</code> → <code>fetch_psi_details.py</code> → <code>download_tables.py</code> → <code>build_tests.py</code> → <code>build_dashboard_data.py</code>. <a href="https://github.com/lujar001-star/FlameInFreeFall-NASA/tree/main/scripts" target="_blank" rel="noopener">scripts on GitHub</a></span></li>
@@ -435,7 +478,7 @@
     </div>
     <div class="f-links">
       <ul><li><a href="#" data-go="overview">Overview</a></li><li><a href="#" data-go="relevance">Mission Relevance</a></li><li><a href="#" data-go="investigations">Investigations</a></li></ul>
-      <ul><li><a href="#" data-go="conditions">Test Conditions</a></li><li><a href="#" data-go="compare">Compare</a></li><li><a href="#" data-go="firesafety">Fire Safety</a></li><li><a href="#" data-go="earth">Earth Applications</a></li></ul>
+      <ul><li><a href="#" data-go="conditions">Test Conditions</a></li><li><a href="#" data-go="compare">Compare</a></li><li><a href="#" data-go="modeling">Modeling Data</a></li><li><a href="#" data-go="firesafety">Fire Safety</a></li><li><a href="#" data-go="earth">Earth Applications</a></li></ul>
       <ul><li><a href="#" data-go="resources">Methodology</a></li><li><a href="#" data-go="hardware">Hardware</a></li><li><a href="#" data-go="team">Team</a></li></ul>
     </div>
     <div class="f-social"><h3>External links</h3><ul><li><a href="https://github.com/lujar001-star/FlameInFreeFall-NASA" target="_blank" rel="noopener">GitHub repository</a></li><li><a href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/?tab=details" target="_blank" rel="noopener">Challenge brief</a></li><li><a href="https://psi.nasa.gov/physci/repo/search?q=combustion&amp;data_source=psi&amp;data_type=investigation" target="_blank" rel="noopener">NASA PSI database</a></li></ul></div>
@@ -474,6 +517,7 @@
     window.scrollTo({top: 0});
     if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
     if (id === 'conditions') drawChart();
+    if (id === 'modeling') renderExplorer();
   }
   tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
   document.addEventListener('click', e => {
@@ -585,7 +629,7 @@
     <div class="detail-links">
       <a class="go" href="${esc(i.psi_url)}" target="_blank" rel="noopener">PSI record</a>
       ${i.doi ? `<a class="go" href="https://doi.org/${esc(i.doi)}" target="_blank" rel="noopener">DOI ${esc(i.doi)}</a>` : ''}
-      <a class="go" href="#" data-csv="${i.accession}">Download this investigation's tests (CSV)</a>
+      <a class="go" href="#" data-csv="${i.accession}">Download this investigation's tests and results (CSV)</a>
       <span class="muted" style="margin-top:14px">${i.publications} publications in PSI${rel ? ' · Related: ' : ''}</span>${rel}
     </div>`;
   }
@@ -629,9 +673,11 @@
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-csv]'); if (!a) return;
     e.preventDefault(); e.stopPropagation();
-    const head = ['accession', 'investigation', 'o2_pct', 'pressure_atm', 'fuel_phase', 'o2_assumed', 'fuel', 'test_id', 'config'];
+    // all conditions and results for this investigation; drop columns it never reports
+    const acc = a.dataset.csv, cols = D.explorer.cols, rowsAll = D.explorer.rows.filter(r => r[0] === acc);
+    const keep = cols.map((c, k) => k).filter(k => k < 2 || rowsAll.some(r => r[k] != null && r[k] !== ''));
     const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const lines = [head.join(',')].concat(D.tests.filter(t => t[0] === a.dataset.csv).map(t => t.map(q).join(',')));
+    const lines = [keep.map(k => cols[k]).join(',')].concat(rowsAll.map(r => keep.map(k => q(r[k])).join(',')));
     const blob = new Blob([lines.join('\n')], {type: 'text/csv'});
     const url = URL.createObjectURL(blob);
     const dl = Object.assign(document.createElement('a'), {href: url, download: `${a.dataset.csv}_tests.csv`});
@@ -728,6 +774,116 @@
       }).join('') + '</tbody>';
   }
   renderCompare();
+
+  /* ---------- Modeling data ---------- */
+  const VARS = D.variables, VBY = Object.fromEntries(VARS.map(v => [v.key, v]));
+  const EX = D.explorer, EXI = Object.fromEntries(EX.cols.map((c, k) => [c, k]));
+  const MX = D.matrix;
+  const NUMERIC = new Set(["o2_pct","pressure_atm","flow_cm_s","co2_pct","he_pct","size_mm","fuel_flow_mg_s","aging_time_s","t_adiabatic_K","z_st","burn_time_s","burning_rate_mm2_s","extinction_diam_mm","spread_rate_mm_s","spread_rate_1g_mm_s","final_o2_pct","final_co2_pct","final_co_ppm","peak_burner_temp_K","flames_ignited","rt_r0"]);
+  const resultKeys = VARS.filter(v => v.role === 'result').map(v => v.key);
+  const condKeys = VARS.filter(v => v.role === 'condition').map(v => v.key);
+
+  // model-ready: >=1 varied condition and >=1 result reported for >=20 tests
+  const ready = INV.map(i => {
+    const m = MX[i.accession] || {};
+    const varied = condKeys.filter(k => m[k] && m[k].status === 'varied');
+    const results = resultKeys.filter(k => k !== 'flames_ignited' && m[k] && m[k].n >= 20);  // daily tallies are not model outputs
+    return {i, varied, results};
+  }).filter(r => r.varied.length && r.results.length).sort((a, b) => b.i.stats.tests - a.i.stats.tests);
+  const resultValues = INV.reduce((a, i) => a + resultKeys.reduce((b, k) => b + ((MX[i.accession] || {})[k]?.n || 0), 0), 0);
+  const withResults = INV.filter(i => resultKeys.some(k => (MX[i.accession] || {})[k])).length;
+  document.getElementById('modelStats').innerHTML = [
+    [resultValues.toLocaleString(), 'measured result values extracted'],
+    [withResults, 'investigations with results in their table'],
+    [ready.length, 'model-ready datasets'],
+    [VARS.length, 'standardized variables'],
+  ].map(([v, k]) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  const shortList = keys => keys.map(k => VBY[k].label.toLowerCase()).join(', ');
+  document.getElementById('modelReady').innerHTML = ready.map(r => `
+    <article class="card"><h3>${esc(r.i.name)}</h3>
+      <p class="ready-vars"><b>Results:</b> ${esc(shortList(r.results))}</p>
+      <p class="ready-vars" style="margin-top:6px"><b>as a function of:</b> ${esc(shortList(r.varied))}</p>
+      <p style="margin-top:8px">${esc(r.i.modeling_value)}</p>
+      <a class="go" href="#" data-explore="${r.i.accession}">Plot it</a> &nbsp; <a class="go" href="#" data-csv="${r.i.accession}">CSV</a></article>`).join('');
+
+  const xs = {acc: 'PSI-69', x: 'o2_pct', y: 'extinction_diam_mm', color: 'fuel'};
+  function availableVars(acc) {
+    const m = MX[acc] || {};
+    return VARS.map(v => v.key).filter(k => m[k] && NUMERIC.has(k));
+  }
+  function pickDefaults(acc) {
+    const av = availableVars(acc);
+    const res = av.filter(k => resultKeys.includes(k)), cond = av.filter(k => !resultKeys.includes(k) && (MX[acc][k].status === 'varied'));
+    xs.x = cond[0] || av[0]; xs.y = res[0] || av[1] || av[0];
+    xs.color = ['end_state', 'ignited', 'fuel', 'flow_direction'].find(k => (MX[acc] || {})[k]?.status === 'varied') || 'none';
+  }
+  function renderExplorer() {
+    const av = availableVars(xs.acc);
+    const opt = (list, sel, labeler) => list.map(k => `<option value="${k}" ${k === sel ? 'selected' : ''}>${esc(labeler(k))}</option>`).join('');
+    const cats = ['none', 'fuel', 'ignited', 'end_state', 'flow_direction', 'config'].filter(k => k === 'none' || (MX[xs.acc] || {})[k] || k === 'config');
+    document.getElementById('explorerControls').innerHTML = `
+      <label>Dataset <select id="exAcc">${ready.map(r => `<option value="${r.i.accession}" ${r.i.accession === xs.acc ? 'selected' : ''}>${esc(r.i.name)}</option>`).join('')}</select></label>
+      <label>X <select id="exX">${opt(av, xs.x, k => VBY[k].label + (VBY[k].unit ? ' (' + VBY[k].unit + ')' : ''))}</select></label>
+      <label>Y <select id="exY">${opt(av, xs.y, k => VBY[k].label + (VBY[k].unit ? ' (' + VBY[k].unit + ')' : ''))}</select></label>
+      <label>Color by <select id="exC">${opt(cats, xs.color, k => k === 'none' ? '(none)' : k === 'config' ? 'Configuration' : VBY[k].label)}</select></label>`;
+    document.getElementById('exAcc').onchange = e => { xs.acc = e.target.value; pickDefaults(xs.acc); renderExplorer(); };
+    document.getElementById('exX').onchange = e => { xs.x = e.target.value; drawExplorer(); };
+    document.getElementById('exY').onchange = e => { xs.y = e.target.value; drawExplorer(); };
+    document.getElementById('exC').onchange = e => { xs.color = e.target.value; drawExplorer(); };
+    drawExplorer();
+  }
+  const PALETTE = ['#ffcc33', '#5bc0eb', '#f08a5d', '#b9a7ff', '#7bd389', '#ff8a98', '#f3e6c8', '#9fd3ff'];
+  function drawExplorer() {
+    const el = document.getElementById('explorerChart');
+    if (!window.Plotly) { el.innerHTML = '<p class="empty">Chart library could not load (offline?).</p>'; return; }
+    if (!document.getElementById('view-modeling').classList.contains('active')) return;
+    const rows = EX.rows.filter(r => r[EXI.accession] === xs.acc && r[EXI[xs.x]] != null && r[EXI[xs.y]] != null);
+    const groups = {};
+    rows.forEach(r => { const g = xs.color === 'none' ? 'tests' : (r[EXI[xs.color]] ?? '(not reported)'); (groups[g] = groups[g] || []).push(r); });
+    const names = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length).slice(0, 8);
+    const traces = names.map((g, k) => ({
+      type: 'scatter', mode: 'markers', name: String(g).slice(0, 40),
+      x: groups[g].map(r => r[EXI[xs.x]]), y: groups[g].map(r => r[EXI[xs.y]]),
+      text: groups[g].map(r => `Test ${r[EXI.test_id]} · ${r[EXI.fuel] ?? ''}`),
+      hovertemplate: '%{text}<br>' + esc(VBY[xs.x].label) + ': %{x}<br>' + esc(VBY[xs.y].label) + ': %{y}<extra></extra>',
+      marker: {size: 8, color: PALETTE[k % PALETTE.length], opacity: 0.85, line: {width: 0}},
+    }));
+    const ax = k => ({title: VBY[k].label + (VBY[k].unit ? ` (${VBY[k].unit})` : ''), gridcolor: '#4a1a25', zeroline: false});
+    Plotly.react(el, traces, {
+      paper_bgcolor: '#2b0610', plot_bgcolor: '#2b0610', font: {family: 'Public Sans, Arial', color: '#f1e1e4', size: 13},
+      margin: {l: 70, r: 20, t: 20, b: 60}, xaxis: ax(xs.x), yaxis: ax(xs.y),
+      legend: {orientation: 'h', y: -0.22, bgcolor: 'rgba(0,0,0,0)'}, showlegend: xs.color !== 'none',
+    }, {responsive: true, displaylogo: false});
+    const notes = [];
+    if (VBY[xs.x].role === 'calculated' || VBY[xs.y].role === 'calculated') notes.push('calculated parameter, not a measurement');
+    if (xs.x === 'o2_pct' && (MX[xs.acc] || {}).o2_pct?.status === 'assumed') notes.push('O₂ assumed (cabin air)');
+    if (xs.acc === 'PSI-159' || xs.acc === 'PSI-10') notes.push('inverse-flame O₂ is the burner stream');
+    document.getElementById('explorerNote').textContent = `${rows.length} tests plotted from ${byAcc[xs.acc].name}.` + (notes.length ? ' Note: ' + notes.join('; ') + '.' : '');
+  }
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-explore]'); if (!a) return;
+    e.preventDefault(); xs.acc = a.dataset.explore; pickDefaults(xs.acc); renderExplorer();
+    document.getElementById('explorerControls').scrollIntoView({block: 'start'});
+  });
+  pickDefaults(xs.acc); xs.y = 'extinction_diam_mm';
+
+  // matrix
+  const groupsDef = [['condition', 'Conditions (inputs)'], ['calculated', 'Calculated'], ['result', 'Measured results (outputs)']];
+  const mcols = VARS.filter(v => INV.some(i => (MX[i.accession] || {})[v.key]));
+  document.getElementById('matrixTable').innerHTML =
+    `<thead><tr><th></th>${groupsDef.map(([g, lab]) => { const n = mcols.filter(v => v.role === g).length; return n ? `<th class="grp" colspan="${n}">${lab}</th>` : ''; }).join('')}</tr>
+     <tr><th>Investigation</th>${groupsDef.map(([g]) => mcols.filter(v => v.role === g).map(v => `<th title="${esc(v.desc)}">${esc(v.label)}${v.unit && v.unit.length < 7 ? `<br><span class="muted">${esc(v.unit)}</span>` : ''}</th>`).join('')).join('')}</tr></thead><tbody>` +
+    INV.slice().sort((a, b) => a.name.localeCompare(b.name)).map(i => {
+      const m = MX[i.accession] || {};
+      return `<tr><td class="name"><a href="#" data-open="${i.accession}">${esc(i.name)}</a></td>${groupsDef.map(([g]) => mcols.filter(v => v.role === g).map(v => {
+        const c = m[v.key]; if (!c) return '<td></td>';
+        const cls = c.status === 'assumed' ? 'assumed' : v.role === 'result' ? 'result' : c.status;
+        const txt = c.status === 'assumed' ? 'A' : c.status === 'fixed' ? '1' : c.levels;
+        return `<td><span class="mx ${cls}" title="${c.n} tests report this; ${c.levels} distinct value(s)">${txt}</span></td>`;
+      }).join('')).join('')}</tr>`;
+    }).join('') + '</tbody>';
+  document.getElementById('dictTable').innerHTML = '<thead><tr><th>Column in tests.csv</th><th>Meaning</th><th>Unit</th><th>Role</th></tr></thead><tbody>' +
+    VARS.map(v => `<tr><td><code>${esc(v.key.replace(/^(o2|pressure|flow)_(pct|atm|cm_s)$/, (m0, a, b) => `${a}_min_${b} / ${a}_max_${b}`))}</code></td><td>${esc(v.label)}: ${esc(v.desc)}</td><td>${esc(v.unit)}</td><td>${esc(v.role)}</td></tr>`).join('') + '</tbody>';
 
   /* ---------- Hardware ---------- */
   const FAM = {

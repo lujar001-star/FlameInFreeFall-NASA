@@ -96,12 +96,13 @@
       },
       "summary": "First large-scale spacecraft fire: a 94 cm x 40 cm SIBAL fabric sample burned inside an uncrewed Cygnus cargo vehicle after it left the ISS.",
       "what_varied": [
-        "Only two samples (S1, S2)"
+        "Flow direction: concurrent (sample S1) vs opposed (sample S2)"
       ],
       "held_constant": [
-        "SIBAL fabric",
-        "20 cm/s concurrent flow",
-        "Cabin air (~21.5% O2)"
+        "SIBAL fabric, about 94 x 40.6 cm",
+        "20 cm/s air flow",
+        "Cabin air (~21.5% O2)",
+        "Igniter power and time"
       ],
       "measurements": [
         "Two video cameras",
@@ -109,7 +110,7 @@
         "Heat flux and thermocouples",
         "Cabin pressure"
       ],
-      "takeaway": "Large fires grow and spread differently at realistic scale than small glovebox samples; data on vehicle-level O2 depletion, CO2 rise and pressure rise are unique.",
+      "takeaway": "Large fires behave differently from small glovebox samples: the concurrent-flow fabric fire burned for 420 s versus 70 s in opposed flow, and the vehicle-level O2, CO2 and pressure response is unique data.",
       "modeling_value": "Full-scale fire growth and cabin pressure/atmosphere response for validating vehicle-level fire models.",
       "habitat_note": "The only realistic-scale fire data; directly relevant to spacecraft and rover cabin fire scenarios.",
       "earth_application": "Large-scale fire growth in confined vehicles.",
@@ -136,19 +137,20 @@
       },
       "summary": "Nine smaller samples of different spacecraft materials (silicone, SIBAL, PMMA, Nomex) burned in Cygnus to compare microgravity flammability with the NASA 1-g screening test.",
       "what_varied": [
-        "Material",
+        "Material (silicone, SIBAL, PMMA, Nomex)",
         "Thickness (0.27 mm to 1 cm)",
+        "Flow direction (concurrent and opposed)",
         "Ignition power and time"
       ],
       "held_constant": [
-        "20 cm/s concurrent flow",
+        "20 cm/s air flow",
         "~21.5 to 22.1% O2",
         "29 x 5 cm samples"
       ],
       "measurements": [
         "Video",
-        "O2/CO2 (O2 derived from CO2 product)",
-        "Burn length and spread length in microgravity vs 1-g"
+        "O2 derived from measured CO2 product",
+        "Burn length and flame spread rate in microgravity and in 1-g"
       ],
       "takeaway": "Some materials that pass or fail the 1-g test behave differently in microgravity (e.g. silicone barely burned while SIBAL and PMMA sustained flames).",
       "modeling_value": "Side-by-side microgravity vs 1-g burn and spread lengths for several materials: rare paired data.",
@@ -174,13 +176,13 @@
         "detection": 2,
         "suppression": 1
       },
-      "summary": "Repeat of the large-scale fabric fire at a higher flow speed (30 cm/s) inside Cygnus.",
+      "summary": "Repeat of the large-scale fabric fire inside Cygnus at a higher flow speed (30 cm/s), in concurrent and opposed flow.",
       "what_varied": [
-        "Two samples"
+        "Flow direction: concurrent (S1) vs opposed (S2)"
       ],
       "held_constant": [
         "SIBAL fabric 94 x 40.6 cm",
-        "30 cm/s concurrent flow",
+        "30 cm/s air flow",
         "Cabin air"
       ],
       "measurements": [

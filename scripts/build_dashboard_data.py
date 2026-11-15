@@ -24,6 +24,82 @@ from scoring import COMPONENT_WEIGHTS, FUEL_RELEVANCE, HABITATS, load_data, test
 DATA = ROOT / "data"
 PSI_PAGE = "https://psi.nasa.gov/physci/repo/data/investigations/{}"
 
+# Data dictionary for data/tests.csv. role: condition (model input), calculated (design parameter computed
+# by the investigators, not measured), result (measured outcome / model output).
+VARS = [
+    ("fuel", "Fuel / material", "", "condition", "Fuel, fuel mixture or solid material as listed in the PSI table."),
+    ("o2_pct", "Oxygen", "% vol", "condition", "Ambient O2 (for ACME inverse flames: O2 in the burner stream)."),
+    ("pressure_atm", "Pressure", "atm", "condition", "Chamber or cabin pressure (bar and mmHg converted)."),
+    ("flow_cm_s", "Flow speed", "cm/s", "condition", "Imposed air or co-flow speed."),
+    ("flow_direction", "Flow direction", "", "condition", "Concurrent or opposed to flame spread (Saffire)."),
+    ("co2_pct", "CO2 in atmosphere", "% vol", "condition", "Initial CO2 (FLEX suppressant dilution; BASS-II background)."),
+    ("he_pct", "Helium in atmosphere", "% vol", "condition", "Initial helium diluent (FLEX, CFI)."),
+    ("size_mm", "Sample / droplet / burner size", "mm", "condition", "Droplet initial diameter, nozzle or burner diameter, or solid sample thickness."),
+    ("fuel_flow_mg_s", "Fuel flow rate", "mg/s", "condition", "Gaseous fuel mass flow (SPICE, ACME)."),
+    ("aging_time_s", "Smoke aging time", "s", "condition", "Time smoke was aged before measurement (SAME, SAME-R)."),
+    ("t_adiabatic_K", "Adiabatic flame temperature", "K", "calculated", "Computed by the investigators from the mixture; not a measurement."),
+    ("z_st", "Stoichiometric mixture fraction", "", "calculated", "Computed flame-structure parameter (ACME)."),
+    ("ignited", "Ignited", "yes/no/flash", "result", "Whether a hot flame ignited (ACME CFI-G)."),
+    ("end_state", "How the test ended", "", "result", "Extinction, burn to completion, disruption, self-extinguished, flow terminated."),
+    ("burn_time_s", "Burn time", "s", "result", "Flame duration."),
+    ("burning_rate_mm2_s", "Droplet burning rate", "mm²/s", "result", "Burning-rate constant (FLEX; table header reads 'mm')."),
+    ("extinction_diam_mm", "Extinction diameter", "mm", "result", "Droplet diameter when the visible flame went out (FLEX)."),
+    ("spread_rate_mm_s", "Flame spread rate (microgravity)", "mm/s", "result", "Flame spread over the solid in microgravity (Saffire-II)."),
+    ("spread_rate_1g_mm_s", "Flame spread rate (1-g)", "mm/s", "result", "Same material in normal gravity, for comparison (Saffire-II)."),
+    ("final_o2_pct", "Final O2", "% vol", "result", "O2 left in the duct after the burn (BASS-II)."),
+    ("final_co2_pct", "Final CO2", "% vol", "result", "CO2 after the burn (BASS-II)."),
+    ("final_co_ppm", "Final CO", "ppm", "result", "Carbon monoxide after the burn (BASS-II)."),
+    ("peak_burner_temp_K", "Peak burner temperature", "K", "result", "Maximum burner surface temperature (ACME CFI-G)."),
+    ("cool_flame", "Cool flame observed", "yes/no", "result", "Whether a cool flame was detected (ACME CFI-G normal flames)."),
+    ("flames_ignited", "Flames ignited (per test day)", "count", "result", "Number of flames ignited in a day's session (ACME day logs)."),
+    ("rt_r0", "Rt/R0", "ratio", "result", "Smoke measurement ratio exactly as reported in the SAME-R table."),
+]
+NUMERIC_EXPLORER = ["o2_pct", "pressure_atm", "flow_cm_s", "co2_pct", "he_pct", "size_mm", "fuel_flow_mg_s",
+                    "aging_time_s", "t_adiabatic_K", "z_st", "burn_time_s", "burning_rate_mm2_s",
+                    "extinction_diam_mm", "spread_rate_mm_s", "spread_rate_1g_mm_s", "final_o2_pct",
+                    "final_co2_pct", "final_co_ppm", "peak_burner_temp_K", "flames_ignited", "rt_r0"]
+CATEGORICAL_EXPLORER = ["fuel", "ignited", "end_state", "flow_direction", "config"]
+
+
+def with_mid_columns(t):
+    """Add single-value o2/pressure/flow columns (midpoint of the min/max range)."""
+    t = t.copy()
+    for k, a, b in (("o2_pct", "o2_min_pct", "o2_max_pct"), ("pressure_atm", "pressure_min_atm", "pressure_max_atm"),
+                    ("flow_cm_s", "flow_min_cm_s", "flow_max_cm_s")):
+        t[k] = (t[a] + t[b]) / 2
+    return t
+
+
+RANGE_COLS = {"o2_pct": ("o2_min_pct", "o2_max_pct"), "pressure_atm": ("pressure_min_atm", "pressure_max_atm"),
+              "flow_cm_s": ("flow_min_cm_s", "flow_max_cm_s")}
+
+
+def variable_matrix(t, accessions):
+    import pandas as pd
+    """Per investigation and variable: how many tests report it and whether it varies."""
+    out = {}
+    for acc in accessions:
+        sub = t[t["accession"] == acc]
+        assumed = sub["assumed"].fillna("")
+        row = {}
+        for key, *_ in VARS:
+            col = sub[key].dropna()
+            col = col[col.astype(str).str.strip() != ""]
+            if col.empty:
+                continue
+            levels = int(col.astype(str).str.strip().str.lower().nunique())
+            if key in RANGE_COLS:  # count both ends of reported ranges (e.g. FLEX-2 "17-30% O2" rows)
+                lo, hi = RANGE_COLS[key]
+                levels = int(pd.concat([sub[lo], sub[hi]]).dropna().round(4).nunique())
+            status = "varied" if levels > 1 else "fixed"
+            if key == "o2_pct" and assumed.str.contains("o2").all():
+                status = "assumed"
+            if key == "pressure_atm" and assumed.str.contains("pressure").all():
+                status = "assumed"
+            row[key] = {"n": int(len(col)), "levels": levels, "status": status}
+        out[acc] = row
+    return out
+
 
 def rng(series):
     s = series.dropna()
@@ -123,12 +199,24 @@ def main() -> None:
         "partial_gravity_tests": 0,
     }
 
+    # columnar per-test data for the modeling explorer (numbers rounded to keep the bundle small)
+    tm = with_mid_columns(tests)
+    ex_cols = ["accession", "test_id", *CATEGORICAL_EXPLORER, *NUMERIC_EXPLORER]
+    ex = tm[ex_cols].copy()
+    for c in NUMERIC_EXPLORER:
+        ex[c] = ex[c].round(4)
+    ex = ex.astype(object).where(ex.notna(), None)
+    explorer = {"cols": ex_cols, "rows": ex.values.tolist()}
+
     bundle = {
         "generated_from": "NASA PSI (psi.nasa.gov) experiment tables and investigation records",
         "generated_on": __import__("datetime").date.today().isoformat(),
         "weights": COMPONENT_WEIGHTS,
         "investigations": invs, "habitats": habitats, "tests": rows,
         "gaps": gaps, "ground_studies": ground,
+        "variables": [dict(zip(("key", "label", "unit", "role", "desc"), v)) for v in VARS],
+        "matrix": variable_matrix(tm, [c["accession"] for c in cards]),
+        "explorer": explorer,
         "context_studies": [{**c, "psi_url": PSI_PAGE.format(c["accession"]),
                              "doi": details.get(c["accession"], {}).get("doi", "")} for c in context],
     }
