@@ -442,7 +442,7 @@
       <li><b>Assumed values</b><span>Where a table does not record O<sub>2</sub> or pressure and the investigation ran in ISS cabin air, we use 21% and 1 atm, flag the row, and down-weight it.</span></li>
       <li><b>Invalid values</b><span>Physically impossible entries (e.g. 0 atm, 200% O<sub>2</sub>, negative flow) are blanked, never guessed, and noted in the row.</span></li>
       <li><b>Inverse flames</b><span>In ACME inverse flames the O<sub>2</sub> value is the oxidizer stream from the burner, not the ambient atmosphere. Use the filter on the condition map.</span></li>
-      <li><b>Interpretation</b><span>Insight cards were drafted with AI assistance from the PSI investigation records and reviewed by the team. Confirm critical details against the PSI pages and publications.</span></li>
+      <li><b>Interpretation</b><span>Insight cards were drafted with AI assistance, then every statement was checked against the investigation's PSI record (objectives, approach, hardware, research impacts) and its experiment table; unsupported statements were rewritten or removed. Each card names what it was checked against. Confirm critical details against the PSI pages and publications.</span></li>
     </ul>
 
     <h3 class="section">Cite the data</h3>
@@ -671,7 +671,8 @@
       ${i.doi ? `<a class="go" href="https://doi.org/${esc(i.doi)}" target="_blank" rel="noopener">DOI ${esc(i.doi)}</a>` : ''}
       <a class="go" href="#" data-csv="${i.accession}">Download this investigation's tests and results (CSV)</a>
       <span class="muted" style="margin-top:14px">${i.publications} publications in PSI${rel ? ' · Related: ' : ''}</span>${rel}
-    </div>`;
+    </div>
+    ${i.verified ? `<p class="muted" style="font-size:13px;margin-top:10px">✓ Checked against: ${esc(i.verified)}</p>` : ''}`;
   }
   function render() {
     const c = document.getElementById('controls'); c.innerHTML = '';
@@ -1030,7 +1031,7 @@
   const EARTH = [
     {t: "Oxygen-enriched fires in hospitals and homes", ev: "psi", who: "Operating rooms, home oxygen users, hyperbaric chambers",
      problem: "Supplemental oxygen raises the local O₂ level around patients, so drapes, bedding and hair ignite more easily and fires spread faster.",
-     data: "ACME CFI-G and Flame Design reach up to 85% O₂, ACME BRE tested 21 to 40% O₂, and FLEX burned fuels up to 34% O₂, measuring how flame temperature, burning rate and extinction change as oxygen rises.",
+     data: "ACME CFI-G and Flame Design reach up to 85% O₂, ACME BRE tested 21 to 40% O₂ and found flames kept burning without airflow at elevated oxygen, and FLEX burned fuels up to 34% O₂, recording how ignition, burning and extinction change as oxygen rises.",
      use: "Quantitative flammability-vs-oxygen trends for safety guidance and fire models of oxygen-enriched rooms.",
      inv: ["PSI-159", "PSI-10", "PSI-20", "PSI-69"]},
     {t: "Smarter smoke detectors with fewer false alarms", ev: "psi", who: "Homes, aircraft cargo holds, mines, data centers",
@@ -1045,7 +1046,7 @@
      inv: ["PSI-69", "PSI-68"]},
     {t: "Better flammability tests for vehicle materials", ev: "psi", who: "Aircraft cabins, submarines, trains, buses",
      problem: "Material approval relies on standard upward-burning tests that may not reflect how materials burn in a ventilated, enclosed vehicle.",
-     data: "BASS and BASS-II found solids keep burning in slow airflow at lower oxygen than the standard test predicts; SAFFIRE I–III compared microgravity and 1-g burning of the same materials at large scale.",
+     data: "BASS and BASS-II were designed to bridge NASA's normal-gravity screening test and actual microgravity flammability. In SAFFIRE-II, thin silicone burned completely in 1-g tests but barely at all in microgravity, while SIBAL fabric burned its full length in both.",
      use: "Evidence for improving flammability test methods and material selection in sealed, ventilated vehicles.",
      inv: ["PSI-25", "PSI-26", "PSI-98", "PSI-99", "PSI-100"]},
     {t: "Fires at reduced pressure", ev: "related", who: "Aircraft at cruise altitude, high-altitude facilities",
@@ -1060,7 +1061,7 @@
      inv: ["PSI-107", "PSI-106", "PSI-10", "PSI-21"]},
     {t: "Hidden 'cool flames' and re-ignition hazards", ev: "related", who: "Fuel storage, chemical plants, engine developers",
      problem: "Cool flames are faint, low-temperature reactions that can survive after a visible flame goes out and lead to re-ignition or auto-ignition.",
-     data: "FLEX discovered long-lived droplet cool flames in microgravity; CFI and ACME CFI-G mapped when they occur vs pressure, oxygen and fuel.",
+     data: "FLEX droplet data include cool flames, analyzed further by the PSI ground studies PSI-117 and PSI-142; CFI and ACME CFI-G mapped when cool flames occur versus pressure, oxygen and fuel.",
      use: "Low-temperature chemistry data for auto-ignition models used in process safety and advanced engines.",
      inv: ["PSI-69", "PSI-39", "PSI-159"]},
   ];
