@@ -476,7 +476,7 @@
 <section class="view" id="view-modeling">
   <div class="wrap">
     <h2>Data for predictive modeling</h2>
-    <p class="lede">Flammability and fire-scenario models need two things from experiments: the <b>conditions</b> that were set (inputs) and the <b>results</b> that were measured (outputs). We extracted both from every PSI experiment table into one file with consistent units.</p>
+    <p class="lede">Flammability and fire-scenario models need two things from experiments: the <b>conditions</b> that were set (independent variables) and the <b>results</b> that were measured (dependent variables). We extracted both from every PSI experiment table into one file with consistent units.</p>
     <div class="stats" id="modelStats"></div>
 
     <h3 class="section">Model-ready datasets</h3>
@@ -882,7 +882,7 @@
     let list = INV.filter(i =>
       (!state.area || i.pillars[state.area.toLowerCase()] >= 2) &&
       (!state.fuel || phaseGroup(i.fuel_phase) === state.fuel) &&
-      (!state.q || [i.name, i.full_name, i.summary, i.family, i.fuel_phase, i.stats.fuels.join(' ')].join(' ').toLowerCase().includes(state.q)));
+      (!state.q || [i.name, i.full_name, i.summary, i.family, i.fuel_phase, i.stats.fuels.join(' ')].join(' ').replace(/₂/g, '2').toLowerCase().includes(state.q.replace(/₂/g, '2'))));  // 'O2' finds 'O₂'
     list.sort((a, b) => state.asc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
     document.getElementById('rows').innerHTML = list.map(i => `
       <tr class="clickable" data-toggle="${i.accession}">
@@ -1093,11 +1093,12 @@
     [ready.length, 'model-ready datasets'],
     [VARS.length, 'standardized variables'],
   ].map(([v, k]) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
-  const shortList = keys => keys.map(k => VBY[k].label.toLowerCase()).join(', ');
+  const lc = l => /^[A-Z][a-z]+(\s|$)/.test(l) ? l[0].toLowerCase() + l.slice(1) : l;  // keep O₂, CO₂, Rt/R0 as written
+  const shortList = keys => keys.map(k => lc(VBY[k].label)).join(', ');
   document.getElementById('modelReady').innerHTML = ready.map(r => `
     <article class="card"><h3>${esc(r.i.name)}</h3>
-      <p class="ready-vars"><b>Results:</b> ${esc(shortList(r.results))}</p>
-      <p class="ready-vars" style="margin-top:6px"><b>as a function of:</b> ${esc(shortList(r.varied))}</p>
+      <p class="ready-vars"><b>Dependent variables:</b> ${esc(shortList(r.results))}</p>
+      <p class="ready-vars" style="margin-top:6px"><b>Independent variables:</b> ${esc(shortList(r.varied))}</p>
       <p style="margin-top:8px">${esc(r.i.modeling_value)}</p>
       <a class="go" href="#" data-explore="${r.i.accession}">Plot it</a> &nbsp; <a class="go" href="#" data-csv="${r.i.accession}">CSV</a></article>`).join('');
 
@@ -1163,7 +1164,7 @@
   pickDefaults(xs.acc); xs.y = 'extinction_diam_mm';
 
   // matrix
-  const groupsDef = [['condition', 'Conditions (inputs)'], ['calculated', 'Calculated'], ['result', 'Measured results (outputs)']];
+  const groupsDef = [['condition', 'Independent variables (conditions)'], ['calculated', 'Calculated'], ['result', 'Dependent variables (measured results)']];
   const mcols = VARS.filter(v => INV.some(i => (MX[i.accession] || {})[v.key]));
   document.getElementById('matrixTable').innerHTML =
     `<thead><tr><th></th>${groupsDef.map(([g, lab]) => { const n = mcols.filter(v => v.role === g).length; return n ? `<th class="grp" colspan="${n}">${lab}</th>` : ''; }).join('')}</tr>

@@ -4,7 +4,7 @@ NASA Space Apps Challenge 2026 project by the Golden Go-figures (University of M
 Isaac Fouts and Fabian Lujardo.
 
 A web dashboard that turns every combustion experiment table in NASA's Physical Sciences Informatics
-(PSI) database into one comparable dataset: **1,993 tests from 19 investigations, with 2,807 measured
+(PSI) database into one comparable dataset: **1,993 tests from 19 investigations, with 2,698 measured
 results**. It ranks the investigations for a chosen crew environment, extracts model-ready data and
 connects the research to next-generation fire safety equipment.
 

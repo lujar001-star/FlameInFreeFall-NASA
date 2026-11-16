@@ -279,7 +279,7 @@ def same_r():
             flow_min_cm_s=v, flow_max_cm_s=v, diluent="N2 (air)",
             aging_time_s=one(r.get("Net aging time (sec)")), rt_r0=one(r.get("Rt/R0")),
             notes=f"{r.get('Description')}; heating duration {r.get('Duration (sec)')} s; "
-                  f"Rt/R0 reported as in the PSI table",
+                  f"Rt/R0 (heater resistance ratio, a setting) as in the PSI table",
         )))
     return out
 

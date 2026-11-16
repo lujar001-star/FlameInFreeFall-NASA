@@ -25,11 +25,11 @@
       "measurements": [
         "Flame appearance, growth and spread rate from imaging",
         "Radiometer",
-        "O2, CO2 and CO before and after each burn (table)"
+        "O₂, CO₂ and CO before and after each burn (table)"
       ],
       "takeaway": "Designed to bridge NASA's normal-gravity screening test (NASA-STD-6001 Test 1) and actual microgravity flammability. Per the PSI approach, flame appearance, growth and spread rates were determined for realistic solids in opposed and concurrent flow up to 40 cm/s, with oxygen lowered below 21%. PSI states the results help engineers select the safest materials and improve firefighting methods.",
-      "modeling_value": "Table: initial O2 and initial/final O2, CO2 and CO for 129 burns of realistic solids at reduced oxygen. Flame spread rates and extinction limits come from the imagery in the PSI data files, not the table.",
-      "habitat_note": "The largest solid-material test set in PSI with varied oxygen (129 tests), but all at or below ~22% O2; extrapolating to 30%+ Moon-base air requires models.",
+      "modeling_value": "Table: initial O₂ and initial/final O₂, CO₂ and CO for 129 burns of realistic solids at reduced oxygen. Flame spread rates and extinction limits come from the imagery in the PSI data files, not the table.",
+      "habitat_note": "The largest solid-material test set in PSI with varied oxygen (129 tests), but all at or below ~22% O₂; extrapolating to 30%+ Moon-base air requires models.",
       "earth_application": "Material flammability standards, fire behaviour in enclosed and ventilated spaces (aircraft, submarines).",
       "limitations": [
         "No elevated-oxygen tests",
@@ -75,7 +75,7 @@
       "habitat_note": "Representative of ISS cabin air only.",
       "earth_application": "Fire behaviour behind obstructions (wake flames) in confined spaces.",
       "limitations": [
-        "O2 and pressure not varied (assumed cabin air)",
+        "O₂ and pressure not varied (assumed cabin air)",
         "Experiment table lists material and sample only"
       ],
       "related": [
@@ -101,19 +101,19 @@
       "held_constant": [
         "SIBAL fabric, about 94 x 40.6 cm",
         "20 cm/s air flow",
-        "Cabin air (~21.5% O2)",
+        "Cabin air (~21.5% O₂)",
         "Igniter power and time"
       ],
       "measurements": [
         "Two cameras",
         "Thermocouples (flow, flame and plume temperature)",
         "Two radiometers",
-        "Pressure, CO2 and O2 sensors",
+        "Pressure, CO₂ and O₂ sensors",
         "Two anemometers (flow velocity)"
       ],
       "takeaway": "Designed to determine how rapidly a large-scale fire grows in low gravity and to compare low-g flammability with NASA's 1-g screening test. In the table, the fabric burned 420 s in concurrent flow versus 70 s in opposed flow.",
-      "modeling_value": "Table: sample, flow, O2 and burn time. Fire growth, O2/CO2/pressure response and radiometer data for validating vehicle-level fire models are in the PSI data files.",
-      "habitat_note": "Realistic, vehicle-scale fire data (together with Saffire-II and -III, the large-scale fire tests in PSI), all at about 21% O2: relevant to spacecraft and rover cabin fire scenarios, but not yet at Moon-base oxygen levels.",
+      "modeling_value": "Table: sample, flow, O₂ and burn time. Fire growth, O₂/CO₂/pressure response and radiometer data for validating vehicle-level fire models are in the PSI data files.",
+      "habitat_note": "Realistic, vehicle-scale fire data (together with Saffire-II and -III, the large-scale fire tests in PSI), all at about 21% O₂: relevant to spacecraft and rover cabin fire scenarios, but not yet at Moon-base oxygen levels.",
       "earth_application": "Large-scale fire growth in confined vehicles.",
       "limitations": [
         "Very few samples",
@@ -146,18 +146,18 @@
       ],
       "held_constant": [
         "20 cm/s air flow",
-        "~21.5 to 22.1% O2",
+        "~21.5 to 22.1% O₂",
         "29 x 5 cm samples"
       ],
       "measurements": [
         "Two cameras",
         "Thermocouples, two radiometers",
-        "Pressure, CO2 and O2 sensors",
+        "Pressure, CO₂ and O₂ sensors",
         "Burn length and spread rate in microgravity and in 1-g (table)"
       ],
       "takeaway": "In the table, flammability differed between 1-g and microgravity: thin silicone samples burned completely in 1-g tests but barely at all in microgravity, while SIBAL fabric burned its full 29 cm length in both. Designed to compare low-g flammability limits with NASA's 1-g screening test.",
       "modeling_value": "Table: microgravity and 1-g burn length and spread rate for the same materials (rare paired data); sensor time series are in the PSI data files.",
-      "habitat_note": "Material screening insight for any crewed vehicle; still only cabin-air O2.",
+      "habitat_note": "Material screening insight for any crewed vehicle; still only cabin-air O₂.",
       "earth_application": "Improving material flammability test standards.",
       "limitations": [
         "Cabin air only",
@@ -192,7 +192,7 @@
       "measurements": [
         "Two cameras",
         "Thermocouples, two radiometers",
-        "Pressure, CO2 and O2 sensors",
+        "Pressure, CO₂ and O₂ sensors",
         "Two anemometers"
       ],
       "takeaway": "Same objectives as Saffire-I (large-scale fire growth and low-g flammability), repeated at 30 cm/s instead of 20 cm/s in concurrent and opposed flow, giving a second flow speed for large-scale fabric fires.",
@@ -220,12 +220,12 @@
         "detection": 0,
         "suppression": 3
       },
-      "summary": "Burned isolated methanol and heptane droplets to map the flammability limits of liquid fuels and measure how gaseous suppressants (CO2 and helium in the table) change them, over a range of oxygen levels and pressures.",
+      "summary": "Burned isolated methanol and heptane droplets to map the flammability limits of liquid fuels and measure how gaseous suppressants (CO₂ and helium in the table) change them, over a range of oxygen levels and pressures.",
       "what_varied": [
         "Fuel",
         "Oxygen mole fraction (~12 to 34%)",
         "Pressure (~0.7 to 3 atm)",
-        "CO2 and helium diluent fractions",
+        "CO₂ and helium diluent fractions",
         "Initial droplet diameter"
       ],
       "held_constant": [
@@ -238,9 +238,9 @@
         "Soot and temperature (stated goals)",
         "Burn time and how each test ended (table)"
       ],
-      "takeaway": "Designed to determine the limiting oxygen index (the lowest oxygen level that sustains burning) as a function of pressure, and how suppressants (CO2 and helium in the table) shift it. The table reports burning rate, extinction diameter and burn time for 274 tests: the inputs for choosing suppressant concentrations.",
+      "takeaway": "Designed to determine the limiting oxygen index (the lowest oxygen level that sustains burning) as a function of pressure, and how suppressants (CO₂ and helium in the table) shift it. The table reports burning rate, extinction diameter and burn time for 274 tests: the inputs for choosing suppressant concentrations.",
       "modeling_value": "274 individual tests with burning rate, extinction diameter and burn time; a core validation dataset for droplet combustion and suppression models.",
-      "habitat_note": "Includes several tests above 30% O2 and below 1 atm, overlapping the planned Moon-base atmosphere; directly informs CO2 extinguisher sizing.",
+      "habitat_note": "Includes several tests above 30% O₂ and below 1 atm, overlapping the planned Moon-base atmosphere; directly informs CO₂ extinguisher sizing.",
       "earth_application": "Fire suppressant effectiveness, fuel efficiency and cool-flame chemistry for engines.",
       "limitations": [
         "Liquid droplets, not solid cabin materials",
@@ -268,9 +268,9 @@
       "summary": "Extended FLEX to practical and two-component fuels (heptane/iso-octane, propanol/glycerol), across pressures up to 3 atm and with slow imposed flow.",
       "what_varied": [
         "Fuel and mixture fraction",
-        "O2 (17 to 30%)",
+        "O₂ (17 to 30%)",
         "Pressure (0.5 to 3 atm)",
-        "N2 vs He diluent",
+        "N₂ vs He diluent",
         "Flow velocity (0.1 to 5 cm/s)",
         "Droplet size (1.5 to 5 mm)"
       ],
@@ -283,9 +283,9 @@
         "Chamber pressure and temperature",
         "Soot formation (stated objective)"
       ],
-      "takeaway": "Designed to provide benchmark data on pure and two-component fuel droplets. The table lists the condition matrix: 0.5 to 3 atm, 17 to 30% O2 (the approach cites 10 to 40%), nitrogen or helium, and slow imposed flow.",
+      "takeaway": "Designed to provide benchmark data on pure and two-component fuel droplets. The table lists the condition matrix: 0.5 to 3 atm, 17 to 30% O₂ (the approach cites 10 to 40%), nitrogen or helium, and slow imposed flow.",
       "modeling_value": "Benchmark bi-component droplet data; the experiment table is a condition matrix (ranges), not per-test rows.",
-      "habitat_note": "Covers O2 up to 30% and sub-atmospheric pressure, the edge of Moon-base conditions.",
+      "habitat_note": "Covers O₂ up to 30% and sub-atmospheric pressure, the edge of Moon-base conditions.",
       "earth_application": "Cleaner and more efficient liquid-fuel combustion.",
       "limitations": [
         "Table gives ranges only; per-test values need the raw data"
@@ -310,7 +310,7 @@
       "summary": "Studied low-temperature 'cool flames' of n-dodecane droplets at pressures from 0.5 to 5 atm, including helium dilution.",
       "what_varied": [
         "Pressure",
-        "O2 (17 to 21%)",
+        "O₂ (17 to 21%)",
         "Helium fraction",
         "Free vs fiber-supported droplets",
         "Fuel (n-dodecane, iso-dodecane blends)"
@@ -326,10 +326,10 @@
       ],
       "takeaway": "Cool flames are low-temperature reactions. CFI was designed to examine them for n-dodecane and blends from 0.25 to 5 atm, with helium dilution and different droplet sizes; PSI states it provides critical validation for chemical kinetic mechanisms and supports the design of safer spacecraft systems.",
       "modeling_value": "Low-temperature chemistry and cool-flame extinction limits vs pressure.",
-      "habitat_note": "Pressure range brackets habitat pressures; O2 does not reach 30%.",
+      "habitat_note": "Pressure range brackets habitat pressures; O₂ does not reach 30%.",
       "earth_application": "Advanced low-emission engines (HCCI), fuel design.",
       "limitations": [
-        "Max 21% O2"
+        "Max 21% O₂"
       ],
       "related": [
         "PSI-69",
@@ -348,10 +348,10 @@
         "detection": 1,
         "suppression": 1
       },
-      "summary": "Gaseous cool flames (ethane, propane, butane in the table) on a spherical porous burner, in normal flames and inverse flames where oxygen-enriched gas up to 85% O2 flows out of the burner. Cool diffusion flames peak at only 500 to 1000 K.",
+      "summary": "Gaseous cool flames (ethane, propane, butane in the table) on a spherical porous burner, in normal flames and inverse flames where oxygen-enriched gas up to 85% O₂ flows out of the burner. Cool diffusion flames peak at only 500 to 1000 K.",
       "what_varied": [
         "Fuel",
-        "O2 (12 to 85%)",
+        "O₂ (12 to 85%)",
         "Pressure (~0.5 to 3.3 atm)",
         "Flow rates",
         "Normal vs inverse configuration"
@@ -365,13 +365,13 @@
         "Photomultiplier tubes",
         "Thermocouples (burner temperature)"
       ],
-      "takeaway": "In the table, O2 runs from 12 to 85%: the widest span of the 19 PSI combustion experiment tables (computed from all of them; ACME Flame Design also reaches 85%, from 19.8%), covering the 30%+ O2 expected in Moon bases and rovers. Designed to determine the conditions under which cool diffusion flames occur.",
-      "modeling_value": "333 tests with adiabatic flame temperature, stoichiometric mixture fraction and outcome; strong validation set for high-O2 kinetics.",
-      "habitat_note": "Essential for Moon-base and rover atmospheres; note inverse-flame O2 is in the oxidizer stream, not the room air.",
+      "takeaway": "In the table, O₂ runs from 12 to 85%: the widest span of the 19 PSI combustion experiment tables (computed from all of them; ACME Flame Design also reaches 85%, from 19.8%), covering the 30%+ O₂ expected in Moon bases and rovers. Designed to determine the conditions under which cool diffusion flames occur.",
+      "modeling_value": "333 tests with adiabatic flame temperature, stoichiometric mixture fraction and outcome; strong validation set for high-O₂ kinetics.",
+      "habitat_note": "Essential for Moon-base and rover atmospheres; note inverse-flame O₂ is in the oxidizer stream, not the room air.",
       "earth_application": "Engine efficiency through low-temperature combustion.",
       "limitations": [
         "Gaseous fuels, not solid cabin materials",
-        "Inverse-flame O2 is not ambient O2"
+        "Inverse-flame O₂ is not ambient O₂"
       ],
       "related": [
         "PSI-10",
@@ -393,7 +393,7 @@
       "summary": "Spherical ethylene flames (methane per the objectives; propane also appears in the table), normal and inverse, to find when flames start producing soot and when they extinguish, across dilution, flow rate and pressure.",
       "what_varied": [
         "Fuel (C2H4, CH4)",
-        "O2 (~20 to 85%)",
+        "O₂ (~20 to 85%)",
         "Pressure (~0.4 to 3 atm)",
         "Inert dilution",
         "Flow rate"
@@ -408,12 +408,12 @@
         "Thermocouples"
       ],
       "takeaway": "Designed to obtain soot-inception and extinction limits (radiative or kinetic) of spherical flames as functions of flow rate, mixture fraction, inert dilution and pressure. The tables list 327 tests with their conditions; soot governs how much heat a flame radiates.",
-      "modeling_value": "Table: 327 tests with O2, pressure, flows and calculated flame temperature and mixture fraction. Soot-inception and extinction observations are in the PSI data files.",
-      "habitat_note": "Covers elevated O2 and reduced pressure relevant to exploration atmospheres.",
+      "modeling_value": "Table: 327 tests with O₂, pressure, flows and calculated flame temperature and mixture fraction. Soot-inception and extinction observations are in the PSI data files.",
+      "habitat_note": "Covers elevated O₂ and reduced pressure relevant to exploration atmospheres.",
       "earth_application": "Lower-soot, more efficient combustors.",
       "limitations": [
         "Gaseous fuel",
-        "Inverse-flame O2 is in the burner stream"
+        "Inverse-flame O₂ is in the burner stream"
       ],
       "related": [
         "PSI-159",
@@ -432,11 +432,11 @@
         "detection": 1,
         "suppression": 2
       },
-      "summary": "Used a gas-fed porous burner to emulate burning solids in still (quiescent) air. Its objectives list NASA's candidate exploration atmospheres (14.7 psia/21%, 10.2 psia/26.5%, 8.2 psia/34% O2); the table shows flames at 21, 25, 26.5, 34 and 40% O2.",
+      "summary": "Used a gas-fed porous burner to emulate burning solids in still (quiescent) air. Its objectives list NASA's candidate exploration atmospheres (14.7 psia/21%, 10.2 psia/26.5%, 8.2 psia/34% O₂); the table shows flames at 21, 25, 26.5, 34 and 40% O₂.",
       "what_varied": [
         "Fuel (C2H4, CH4, diluted)",
         "Burner size (25, 50 mm)",
-        "O2 (21 to 40%)",
+        "O₂ (21 to 40%)",
         "Pressure (varied, not listed in table)"
       ],
       "held_constant": [
@@ -448,9 +448,9 @@
         "Burner surface temperature",
         "Flame observation"
       ],
-      "takeaway": "PSI reports that flames emulating burning PMMA and nylon kept burning steadily with no air flow in elevated-oxygen atmospheres, while similar flames at 21% O2 self-extinguished quickly. Since stopping ventilation is an established step in fighting spacecraft fires, turning off fans alone may not be enough at elevated oxygen. PSI notes these results are still preliminary.",
+      "takeaway": "PSI reports that flames emulating burning PMMA and nylon kept burning steadily with no air flow in elevated-oxygen atmospheres, while similar flames at 21% O₂ self-extinguished quickly. Since stopping ventilation is an established step in fighting spacecraft fires, turning off fans alone may not be enough at elevated oxygen. PSI notes these results are still preliminary.",
       "modeling_value": "Burning and extinction conditions expressed in terms of material properties: flammability maps that relate gas-burner flames to condensed (solid) fuels.",
-      "habitat_note": "Its objectives list NASA's candidate exploration atmospheres, including 34% O2 at 8.2 psia, which is why it ranks first for Moon-base and rover atmospheres in this dashboard.",
+      "habitat_note": "Its objectives list NASA's candidate exploration atmospheres, including 34% O₂ at 8.2 psia, which is why it ranks first for Moon-base and rover atmospheres in this dashboard.",
       "earth_application": "Material flammability prediction from properties.",
       "limitations": [
         "Pressure per test not in table",
@@ -491,7 +491,7 @@
       "habitat_note": "Indirect: model validation rather than habitat conditions.",
       "earth_application": "Better turbulent-combustion and soot models.",
       "limitations": [
-        "Ambient O2/pressure not in table"
+        "Ambient O₂/pressure not in table"
       ],
       "related": [
         "PSI-22",
@@ -530,7 +530,7 @@
       "limitations": [
         "Analog, not true gravity",
         "PSI states the work was not conducted to serve space applications; the partial-gravity use comes from the challenge brief",
-        "O2/pressure assumed cabin-like"
+        "O₂/pressure assumed cabin-like"
       ],
       "related": [
         "PSI-21"
@@ -551,7 +551,7 @@
       "summary": "Transient spherical diffusion flames of H2/CH4 and C2H4 mixtures to measure flame structure and extinction for model comparison.",
       "what_varied": [
         "Fuel mixture",
-        "Atmosphere (about 21 to 30% O2)",
+        "Atmosphere (about 21 to 30% O₂)",
         "Flow rate"
       ],
       "held_constant": [
@@ -564,7 +564,7 @@
       ],
       "takeaway": "Designed to compare transient spherical flame structure and extinction limits with detailed numerical simulations, testing the transport and chemistry models that fire simulation codes rely on.",
       "modeling_value": "Table: daily fuel, atmosphere and flames ignited. Transient flame structure and extinction data are in the PSI data files.",
-      "habitat_note": "Some tests at elevated O2.",
+      "habitat_note": "Some tests at elevated O₂.",
       "earth_application": "Engine and combustor design.",
       "limitations": [
         "Pressure not in table"
@@ -606,7 +606,7 @@
       "habitat_note": "Cabin air only; informs smoke production for detection.",
       "earth_application": "Soot and emissions control.",
       "limitations": [
-        "O2 and pressure not varied"
+        "O₂ and pressure not varied"
       ],
       "related": [
         "PSI-106",
@@ -709,6 +709,7 @@
       "what_varied": [
         "Material",
         "Inlet velocity",
+        "Heater resistance ratio Rt/R0 (sets heating temperature)",
         "Duration and aging time"
       ],
       "held_constant": [
@@ -721,7 +722,7 @@
         "DustTrak and ionization detector"
       ],
       "takeaway": "Designed, like SAME, to relate smoke particle size to how smoke was generated and transported, with a new material, broader heating conditions and a new instrument. PSI states the results can lead to advanced fire-detector technology for future spacecraft.",
-      "modeling_value": "Table: material, inlet velocity, heating duration, aging times and the Rt/R0 ratio as reported. Particle-size results are in the PSI data files and final report.",
+      "modeling_value": "Table: settings only (material, inlet velocity, heater resistance ratio Rt/R0, heating duration, aging time). Particle-size results are in the PSI data files and final report.",
       "habitat_note": "Applies to any closed habitat.",
       "earth_application": "Smoke detector sensitivity standards.",
       "limitations": [

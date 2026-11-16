@@ -6,6 +6,7 @@ rewritten to what PSI does say, and each card gets a `verified` note recording t
 Run once: python scripts/verified_card_fixes.py
 """
 import json
+import re
 import pathlib
 
 P = pathlib.Path(__file__).resolve().parent.parent / "data" / "insights.json"
@@ -174,9 +175,19 @@ ROUND3_FIELDS = {
     "PSI-23": {"modeling_value": "Table: daily fuel, atmosphere and flames ignited. Transient flame structure and extinction data are in the PSI data files."},
     "PSI-21": {"modeling_value": "Table: daily fuel, dilution range and flames ignited. Flame shape, lift-off, temperature and soot measurements for CFD validation are in the PSI data files."},
     "PSI-102": {"modeling_value": "Table: material, air flow, heating and aging settings. Smoke particle sizes (electron microscopy) and detector responses are in the PSI data files."},
-    "PSI-101": {"modeling_value": "Table: material, inlet velocity, heating duration, aging times and the Rt/R0 ratio as reported. Particle-size results are in the PSI data files and final report."},
+    "PSI-101": {"modeling_value": "Table: settings only (material, inlet velocity, heater resistance ratio Rt/R0, heating duration, aging time). Particle-size results are in the PSI data files and final report.",
+                "what_varied": ["Material", "Inlet velocity", "Heater resistance ratio Rt/R0 (sets heating temperature)", "Duration and aging time"]},
     "PSI-20": {"summary": "Used a gas-fed porous burner to emulate burning solids in still (quiescent) air. Its objectives list NASA's candidate exploration atmospheres (14.7 psia/21%, 10.2 psia/26.5%, 8.2 psia/34% O2); the table shows flames at 21, 25, 26.5, 34 and 40% O2."},
 }
+
+
+def subscripts(v):
+    """Display chemical formulas with real subscripts (O₂, CO₂, N₂) in card text."""
+    if isinstance(v, str):
+        return re.sub(r"(?<![A-Za-z0-9])(CO|O|N)2(?![0-9])", lambda m: m.group(1) + "₂", v)
+    if isinstance(v, list):
+        return [subscripts(x) for x in v]
+    return v
 
 
 def main() -> None:
@@ -189,6 +200,8 @@ def main() -> None:
             c["takeaway"] = ROUND2[c["accession"]]
             if "; reviewed again" not in c.get("verified", ""):
                 c["verified"] = c.get("verified", "") + "; reviewed again to separate stated objectives from reported results"
+        for k in [k for k in c if k not in ("accession", "related", "verified")]:
+            c[k] = subscripts(c[k])
         assert "verified" in c, f"{c['accession']} has no verification note"
     P.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"Applied fixes to {len(FIX)} cards and {len(ROUND2)} round-2 takeaways; "
