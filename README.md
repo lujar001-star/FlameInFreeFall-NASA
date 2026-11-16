@@ -1,4 +1,4 @@
-# Flame in Free Fall: Spacecraft Fire Safety Data Explorer
+﻿# Flame in Free Fall: Spacecraft Fire Safety Data Explorer
 
 NASA Space Apps Challenge 2026 project by the Golden Go-figures (University of Minnesota AEM):
 Isaac Fouts and Fabian Lujardo.
@@ -57,7 +57,6 @@ GitHub Pages needs the repository to be **public** on a free account.
 | `data/dashboard.js` | Data bundle the website loads (generated) |
 | `scoring.py` | Habitat relevance scoring |
 | `scripts/` | Data pipeline |
-| `SUBMISSION.md` | Draft text for the Space Apps submission form |
 
 ## Rebuild the data
 
